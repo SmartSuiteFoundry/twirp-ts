@@ -98,7 +98,8 @@ export class Gateway {
         } else {
           endFn(chunk);
         }
-      };
+        return resp;
+      } as typeof resp.end;
     }
   }
 

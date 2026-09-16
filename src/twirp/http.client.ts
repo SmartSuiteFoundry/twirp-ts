@@ -117,7 +117,10 @@ export const FetchRPC: (options: FetchRPCOptions) => Rpc = (options) => ({
       ...options,
       method: "POST",
       headers,
-      body: data instanceof Uint8Array ? data : JSON.stringify(data),
+      body:
+        data instanceof Uint8Array
+          ? (data as unknown as BodyInit)
+          : JSON.stringify(data),
     });
 
     if (response.status === 200) {

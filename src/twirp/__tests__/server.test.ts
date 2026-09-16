@@ -30,11 +30,23 @@ describe("Server twirp specification", () => {
         server = http.createServer(twirpServer.httpHandler());
     })
 
+    afterEach(() => new Promise<void>((resolve, reject) => {
+        if (!server.listening) {
+            resolve();
+            return;
+        }
+        server.close((err) => (err ? reject(err) : resolve()));
+    }))
+
     it("support only POST requests", async () => {
         const unsupportedMethods = ["get", "put", "patch", "delete", "options"]
 
+        // supertest() lazily calls listen(0) on the server it is given, so the
+        // parallel requests below would otherwise race to bind the same one.
+        await new Promise<void>((resolve) => server.listen(0, resolve));
+
         const tests = unsupportedMethods.map(async (method) => {
-            const dynamicSupertest = supertest(server) as {[key:string]: (...args: any[]) => supertest.Test} & supertest.SuperTest<supertest.Test>
+            const dynamicSupertest = supertest(server) as unknown as {[key:string]: (...args: any[]) => supertest.Test}
 
             const resp = await dynamicSupertest[method]("/invalid-url")
                 .set('Content-Type', 'application/json')
@@ -192,7 +204,7 @@ describe("Hooks & Interceptors", () => {
             .expect('Content-Type', "application/json")
             .expect(200);
 
-        expect(interceptorSpy).toBeCalledTimes(2);
+        expect(interceptorSpy).toHaveBeenCalledTimes(2);
     });
 
     it("can add hooks", async () => {
@@ -220,11 +232,11 @@ describe("Hooks & Interceptors", () => {
             .expect('Content-Type', "application/json")
             .expect(200);
 
-        expect(hookSpy).toBeCalledTimes(4);
-        expect(hookSpy).toBeCalledWith("received");
-        expect(hookSpy).toBeCalledWith("routed");
-        expect(hookSpy).toBeCalledWith("prepared");
-        expect(hookSpy).toBeCalledWith("sent");
+        expect(hookSpy).toHaveBeenCalledTimes(4);
+        expect(hookSpy).toHaveBeenCalledWith("received");
+        expect(hookSpy).toHaveBeenCalledWith("routed");
+        expect(hookSpy).toHaveBeenCalledWith("prepared");
+        expect(hookSpy).toHaveBeenCalledWith("sent");
     });
 
     it("will invoke the error hook when an error occurs", async () => {
@@ -254,6 +266,6 @@ describe("Hooks & Interceptors", () => {
             .expect('Content-Type', "application/json")
             .expect(500);
 
-        expect(hookSpy).toBeCalledWith("error");
+        expect(hookSpy).toHaveBeenCalledWith("error");
     })
 });

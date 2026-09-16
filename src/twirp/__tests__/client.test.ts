@@ -1,4 +1,5 @@
 import * as http from "http";
+import { AddressInfo } from "net";
 import {createHttpTerminator, HttpTerminator} from "http-terminator";
 import {
     createHaberdasherServer,
@@ -40,11 +41,10 @@ describe("Twirp Clients", () => {
     })
 
     it("can call methods using the JSON client", (done) => {
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientJSON(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             const hat = await client.MakeHat({
@@ -65,11 +65,10 @@ describe("Twirp Clients", () => {
     });
 
     it("can call methods using the Protobuf client", (done) => {
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             const hat = await client.MakeHat({
@@ -110,11 +109,10 @@ describe("Twirp Clients", () => {
             server,
         });
 
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             let err: Error | undefined;
@@ -123,7 +121,7 @@ describe("Twirp Clients", () => {
                     inches: 1,
                 });
             } catch (e) {
-                err = e;
+                err = e as Error;
             }
 
 

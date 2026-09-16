@@ -35,7 +35,7 @@ describe("Interceptor", () => {
         })
 
         expect(response).toEqual({test: "test"});
-        expect(spy).toBeCalledTimes(2)
-        expect(spy1).toBeCalledTimes(1)
+        expect(spy).toHaveBeenCalledTimes(2)
+        expect(spy1).toHaveBeenCalledTimes(1)
     })
 })

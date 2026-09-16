@@ -259,10 +259,7 @@ export class TwirpServer<
  * @param res
  * @param error
  */
-export function writeError(
-  res: http.ServerResponse,
-  error: Error | TwirpError
-): void {
+export function writeError(res: http.ServerResponse, error: unknown): void {
   const twirpError = mustBeTwirpError(error);
 
   res.setHeader("Content-Type", "application/json");
@@ -275,7 +272,7 @@ export function writeError(
  * otherwise it will wrap it into an InternalError
  * @param err
  */
-function mustBeTwirpError(err: Error | TwirpError): TwirpError {
+function mustBeTwirpError(err: unknown): TwirpError {
   if (err instanceof TwirpError) {
     return err;
   }

@@ -39,10 +39,11 @@ export class TwirpError extends Error {
    * @param err
    * @param addMeta
    */
-  public withCause(err: Error, addMeta: boolean = false) {
-    this._originalCause = err;
+  public withCause(err: unknown, addMeta: boolean = false) {
+    const cause = toError(err);
+    this._originalCause = cause;
     if (addMeta) {
-      this.withMeta("cause", err.message);
+      this.withMeta("cause", cause.message);
     }
     return this;
   }
@@ -134,11 +135,20 @@ export class InternalServerError extends TwirpError {
  * The wrapped error can be extracted later with err.cause()
  */
 export class InternalServerErrorWith extends InternalServerError {
-  constructor(err: Error) {
-    super(err.message);
-    this.withMeta("cause", err.name);
-    this.withCause(err);
+  constructor(err: unknown) {
+    const cause = toError(err);
+    super(cause.message);
+    this.withMeta("cause", cause.name);
+    this.withCause(cause);
   }
+}
+
+/**
+ * Normalises a caught value into an Error. A `catch` binding is `unknown`:
+ * anything can be thrown, not just Errors.
+ */
+export function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
 }
 
 /**
