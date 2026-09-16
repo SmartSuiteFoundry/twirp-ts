@@ -476,6 +476,20 @@ CommonJS entry point.
 Because both builds can be loaded in a single process, `TwirpError` is two different classes at
 runtime. That is what `isTwirpError` below exists to survive - use it rather than `instanceof`.
 
+### `cause` is the standard `Error.cause`
+
+`TwirpError.cause()` was a method; it is now the ES2022 `Error.cause` property.
+
+```diff
+-const original = err.cause();
++const original = err.cause;
+```
+
+`withCause()` is unchanged. Beyond dropping a bespoke API, this means Node, `util.inspect`, loggers
+and error reporters all understand the wrapped error - `util.inspect` prints it as `[cause]`, which
+it could not before. It is defined non-enumerably, exactly as `new Error(msg, { cause })` does, so it
+stays out of `JSON.stringify` and off the wire.
+
 ### `TwirpError.isTwirpError`
 
 Prefer it over `err instanceof TwirpError`:
@@ -496,6 +510,7 @@ falls back to a structural check so instances from upstream `twirp-ts` are recog
 - **Nested message components are emitted into the OpenAPI schema.** Previously `genSchema` skipped every
   non-map message field, so any nested message referenced by a request or response was left as a dangling
   `$ref` ([upstream #69](https://github.com/hopin-team/twirp-ts/pull/69)).
+- **`cause` is now the standard `Error.cause` property**, not a `cause()` method.
 - **`TwirpError.isTwirpError`** replaces `instanceof` checks inside the server and gateway, so a
   duplicated copy of the package cannot silently downgrade a typed error to a 500.
 - **Server hooks share one context object.** The route handler replaced `ctx` with a copy in order to set

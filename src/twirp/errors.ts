@@ -39,7 +39,11 @@ export class TwirpError extends Error {
   public readonly code: TwirpErrorCode = TwirpErrorCode.Internal;
   public readonly meta: Record<string, string> = {};
 
-  private _originalCause?: Error;
+  /**
+   * The wrapped original error, as the standard ES2022 `Error.cause`.
+   * Narrowed from `unknown` because `withCause` always normalises to an Error.
+   */
+  declare cause?: Error;
 
   constructor(code: TwirpErrorCode, msg: string) {
     super(msg);
@@ -76,15 +80,17 @@ export class TwirpError extends Error {
    */
   public withCause(err: unknown, addMeta: boolean = false) {
     const cause = toError(err);
-    this._originalCause = cause;
+    // Non-enumerable, matching how `new Error(msg, { cause })` defines it, so
+    // it stays out of JSON.stringify and off the wire.
+    Object.defineProperty(this, "cause", {
+      value: cause,
+      writable: true,
+      configurable: true,
+    });
     if (addMeta) {
       this.withMeta("cause", cause.message);
     }
     return this;
-  }
-
-  public cause() {
-    return this._originalCause;
   }
 
   /**
@@ -167,7 +173,7 @@ export class InternalServerError extends TwirpError {
  * InternalErrorWith makes an internal error, wrapping the original error and using it
  * for the error message, and with metadata "cause" with the original error type.
  * This function is used by Twirp services to wrap non-Twirp errors as internal errors.
- * The wrapped error can be extracted later with err.cause()
+ * The wrapped error can be extracted later with err.cause
  */
 export class InternalServerErrorWith extends InternalServerError {
   constructor(err: unknown) {

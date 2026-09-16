@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    // es2021, not es2022: TwirpError.cause() is a method, and ES2022 adds
-    // Error.cause as a property, which collides (TS2425). Renaming it would
-    // break automation-core and metrics.
-    "target": "es2021",
+    "target": "es2022",
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,

@@ -94,6 +94,35 @@ describe("Standard Errors", () => {
     );
   });
 
+  describe("cause", () => {
+    it("exposes the wrapped error as the standard Error.cause", () => {
+      const inner = new Error("boom");
+      const twirpError = new InternalServerError("outer").withCause(inner);
+
+      expect(twirpError.cause).toBe(inner);
+    });
+
+    it("normalises a non-Error cause", () => {
+      const twirpError = new InternalServerError("outer").withCause("boom");
+
+      expect(twirpError.cause).toBeInstanceOf(Error);
+      expect(twirpError.cause?.message).toBe("boom");
+    });
+
+    it("keeps the cause off the wire", () => {
+      const twirpError = new InternalServerError("outer").withCause(
+        new Error("boom")
+      );
+
+      expect(JSON.parse(twirpError.toJSON())).toEqual({
+        code: TwirpErrorCode.Internal,
+        msg: "outer",
+        meta: {},
+      });
+      expect(Object.keys(twirpError)).not.toContain("cause");
+    });
+  });
+
   describe("isTwirpError", () => {
     it("recognises its own instances", () => {
       expect(TwirpError.isTwirpError(new NotFoundError("nope"))).toBe(true);
