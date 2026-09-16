@@ -1,6 +1,6 @@
 {
   "name": "@smartsuite-foundry/twirp-ts",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
   "type": "module",
   "bin": {
