@@ -7,7 +7,7 @@ import {
   Interceptor,
   TwirpContentType,
   chainInterceptors,
-} from "twirp-ts";
+} from "@smartsuite-foundry/twirp-ts";
 import { Size, Hat, FindHatRPC, ListHatRPC } from "./service";
 
 //==================================//

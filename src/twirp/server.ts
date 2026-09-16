@@ -273,7 +273,7 @@ export function writeError(res: http.ServerResponse, error: unknown): void {
  * @param err
  */
 function mustBeTwirpError(err: unknown): TwirpError {
-  if (err instanceof TwirpError) {
+  if (TwirpError.isTwirpError(err)) {
     return err;
   }
   return new InternalServerErrorWith(err);

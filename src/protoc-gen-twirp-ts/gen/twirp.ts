@@ -4,14 +4,14 @@ import { camelCase } from "camel-case";
 import { createLocalTypeName } from "../local-type-name";
 import path from "path";
 
-const TwirpServer = imp("TwirpServer@twirp-ts");
-const Interceptor = imp("Interceptor@twirp-ts");
-const RouterEvents = imp("RouterEvents@twirp-ts");
-const chainInterceptors = imp("chainInterceptors@twirp-ts");
-const TwirpContentType = imp("TwirpContentType@twirp-ts");
-const TwirpContext = imp("TwirpContext@twirp-ts");
-const TwirpError = imp("TwirpError@twirp-ts");
-const TwirpErrorCode = imp("TwirpErrorCode@twirp-ts");
+const TwirpServer = imp("TwirpServer@@smartsuite-foundry/twirp-ts");
+const Interceptor = imp("Interceptor@@smartsuite-foundry/twirp-ts");
+const RouterEvents = imp("RouterEvents@@smartsuite-foundry/twirp-ts");
+const chainInterceptors = imp("chainInterceptors@@smartsuite-foundry/twirp-ts");
+const TwirpContentType = imp("TwirpContentType@@smartsuite-foundry/twirp-ts");
+const TwirpContext = imp("TwirpContext@@smartsuite-foundry/twirp-ts");
+const TwirpError = imp("TwirpError@@smartsuite-foundry/twirp-ts");
+const TwirpErrorCode = imp("TwirpErrorCode@@smartsuite-foundry/twirp-ts");
 
 /**
  * Generates the client and server implementation of the twirp

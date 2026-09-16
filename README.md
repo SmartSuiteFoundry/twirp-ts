@@ -35,13 +35,13 @@ Table of Contents:
 Run the following to install the package
 
 ```
-npm i "twirp-ts@npm:@smartsuite-foundry/twirp-ts" @protobuf-ts/plugin -S
+npm i @smartsuite-foundry/twirp-ts @protobuf-ts/plugin -S
 ```
 
 or
 
 ```
-yarn add "twirp-ts@npm:@smartsuite-foundry/twirp-ts" @protobuf-ts/plugin
+yarn add @smartsuite-foundry/twirp-ts @protobuf-ts/plugin
 ```
 
 Install `ts-proto` instead if you prefer it over `@protobuf-ts`
@@ -151,7 +151,7 @@ Once you've generated the server code you can simply start a server as following
 
 ```ts
 import * as http from "http";
-import {TwirpContext} from "twirp-ts";
+import {TwirpContext} from "@smartsuite-foundry/twirp-ts";
 import {createHaberdasherServer} from "./generated/haberdasher.twirp";
 import {Hat, Size} from "./generated/service";
 
@@ -281,7 +281,7 @@ You can certainly create custom errors that extend a `TwirpError`
 For Example:
 
 ```ts
-import {TwirpError, TwirpErrorCode} from "twirp-ts";
+import {TwirpError, TwirpErrorCode} from "@smartsuite-foundry/twirp-ts";
 
 class UnauthenticatedError extends TwirpError {
     constructor(traceId: string) {
@@ -447,27 +447,48 @@ MIT <3
 This fork is published as `@smartsuite-foundry/twirp-ts`. Upstream `twirp-ts` has had no commit since
 2022-04-29 and no npm release since 2022-05-22.
 
-### Installing
+### Migrating from `twirp-ts`
 
-The code generator emits `import { ... } from "twirp-ts"` into every `.twirp.ts` file, so install the fork
-under an npm alias rather than renaming imports:
+The code generator emits `@smartsuite-foundry/twirp-ts` into every `.twirp.ts`, so a codebase moves
+across by renaming the dependency and the import specifier:
 
-```json
-{
-  "dependencies": {
-    "twirp-ts": "npm:@smartsuite-foundry/twirp-ts@^3.0.0"
-  }
-}
+```diff
+-"twirp-ts": "^2.5.0"
++"@smartsuite-foundry/twirp-ts": "^3.0.0"
 ```
 
-Generated code, hand-written imports and peer dependency ranges all keep resolving as `twirp-ts`, so
-adopting the fork is a one-line change per repository.
+```diff
+-import { TwirpError } from "twirp-ts";
++import { TwirpError } from "@smartsuite-foundry/twirp-ts";
+```
+
+Do this in one move per package, including `peerDependencies`. An npm alias
+(`"twirp-ts": "npm:@smartsuite-foundry/twirp-ts@^3.0.0"`) does **not** satisfy a peer declared on the
+scoped name — npm installs a second physical copy — so a half-migrated tree ends up with both packages
+loaded at once. Migrate libraries before the services that depend on them.
+
+### `TwirpError.isTwirpError`
+
+Prefer it over `err instanceof TwirpError`:
+
+```diff
+-if (err instanceof TwirpError) {
++if (TwirpError.isTwirpError(err)) {
+```
+
+`instanceof` compares class identity, so it is false between two copies of this package — which is
+exactly what a dependency tree holds while it is being migrated, or whenever npm nests a second copy.
+When that check fails inside the server, a typed error is rewrapped as an `InternalServerError`, so a
+400 silently becomes a 500. `isTwirpError` matches on a `Symbol.for` brand shared by every copy, and
+falls back to a structural check so instances from upstream `twirp-ts` are recognised too.
 
 ### Changes since upstream 2.5.0
 
 - **Nested message components are emitted into the OpenAPI schema.** Previously `genSchema` skipped every
   non-map message field, so any nested message referenced by a request or response was left as a dangling
   `$ref` ([upstream #69](https://github.com/hopin-team/twirp-ts/pull/69)).
+- **`TwirpError.isTwirpError`** replaces `instanceof` checks inside the server and gateway, so a
+  duplicated copy of the package cannot silently downgrade a typed error to a 500.
 - **Server hooks share one context object.** The route handler replaced `ctx` with a copy in order to set
   `methodName`, which meant a value stored on the context by `requestRouted` was invisible to `responseSent`
   and every other later hook. `TwirpContext.methodName` is no longer `readonly`

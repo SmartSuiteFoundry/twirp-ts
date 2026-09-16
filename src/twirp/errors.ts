@@ -1,7 +1,40 @@
 /**
  * Represents a twirp error
  */
+/**
+ * Marks TwirpError instances so they stay recognisable across duplicate copies
+ * of this package. Symbol.for is keyed on the global registry, so every copy
+ * agrees on it, unlike a class identity.
+ */
+const twirpErrorBrand = Symbol.for("twirp-ts.TwirpError");
+
 export class TwirpError extends Error {
+  /**
+   * Duplication-safe replacement for `err instanceof TwirpError`.
+   *
+   * A dependency tree can easily hold more than one copy of this package -
+   * through npm nesting, or while a codebase migrates between the published
+   * name and a fork - and `instanceof` is false between them. That silently
+   * turns a typed error (a 400, say) into an InternalServerError 500, because
+   * `mustBeTwirpError` fails to recognise it.
+   */
+  static isTwirpError(value: unknown): value is TwirpError {
+    if (typeof value !== "object" || value === null) {
+      return false;
+    }
+    if ((value as { [key: symbol]: unknown })[twirpErrorBrand] === true) {
+      return true;
+    }
+    // Copies older than this brand, e.g. upstream twirp-ts during a migration,
+    // are recognised structurally instead.
+    const candidate = value as Partial<TwirpError>;
+    return (
+      value instanceof Error &&
+      typeof candidate.code === "string" &&
+      typeof candidate.msg === "string"
+    );
+  }
+
   public readonly msg: string;
   public readonly code: TwirpErrorCode = TwirpErrorCode.Internal;
   public readonly meta: Record<string, string> = {};
@@ -13,6 +46,8 @@ export class TwirpError extends Error {
     this.code = code;
     this.msg = msg;
     Object.setPrototypeOf(this, TwirpError.prototype);
+    // Non-enumerable so it stays out of toJSON() and off the wire.
+    Object.defineProperty(this, twirpErrorBrand, { value: true });
   }
 
   /**

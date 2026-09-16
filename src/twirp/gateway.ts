@@ -56,7 +56,7 @@ export class Gateway {
       this.rewrite(req, resp, prefix)
         .then(() => next())
         .catch((e) => {
-          if (e instanceof TwirpError) {
+          if (TwirpError.isTwirpError(e)) {
             if (e.code !== TwirpErrorCode.NotFound) {
               writeError(resp, e);
             } else {
