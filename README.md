@@ -6,8 +6,9 @@ Supported spec v7 and v8
 
 ----
 
-[![npm version](https://badge.fury.io/js/twirp-ts.svg)](https://badge.fury.io/js/twirp-ts)
-[![Coverage Status](https://coveralls.io/repos/github/hopin-team/twirp-ts/badge.svg?branch=main)](https://coveralls.io/github/hopin-team/twirp-ts?branch=main)
+> **This is SmartSuite's fork of [hopin-team/twirp-ts](https://github.com/hopin-team/twirp-ts)**, published as
+> `@smartsuite-foundry/twirp-ts`. Upstream has been unmaintained since May 2022. The fork carries fixes that
+> were left open upstream and keeps the toolchain current. See [Fork changes](#fork-changes).
 
 Table of Contents:
 
@@ -23,6 +24,7 @@ Table of Contents:
 - [Client](#twirp-client)
 - [Open API V3](#open-api-v3)
 - [Migrate to V2](#migrate-to-v2)
+- [Fork changes](#fork-changes)
 - [How to Upgrade](#how-to-upgrade)
 
 ## Getting Started
@@ -33,13 +35,13 @@ Table of Contents:
 Run the following to install the package
 
 ```
-npm i twirp-ts @protobuf-ts/plugin@next -S
+npm i "twirp-ts@npm:@smartsuite-foundry/twirp-ts" @protobuf-ts/plugin -S
 ```
 
 or
 
 ```
-yarn add twirp-ts @protobuf-ts/plugin@next
+yarn add "twirp-ts@npm:@smartsuite-foundry/twirp-ts" @protobuf-ts/plugin
 ```
 
 Install `ts-proto` instead if you prefer it over `@protobuf-ts`
@@ -439,3 +441,36 @@ Make sure that whenever you update `twirp-ts` you re-generate the server and cli
 ## Licence
 
 MIT <3
+
+## Fork changes
+
+This fork is published as `@smartsuite-foundry/twirp-ts`. Upstream `twirp-ts` has had no commit since
+2022-04-29 and no npm release since 2022-05-22.
+
+### Installing
+
+The code generator emits `import { ... } from "twirp-ts"` into every `.twirp.ts` file, so install the fork
+under an npm alias rather than renaming imports:
+
+```json
+{
+  "dependencies": {
+    "twirp-ts": "npm:@smartsuite-foundry/twirp-ts@^3.0.0"
+  }
+}
+```
+
+Generated code, hand-written imports and peer dependency ranges all keep resolving as `twirp-ts`, so
+adopting the fork is a one-line change per repository.
+
+### Changes since upstream 2.5.0
+
+- **Nested message components are emitted into the OpenAPI schema.** Previously `genSchema` skipped every
+  non-map message field, so any nested message referenced by a request or response was left as a dangling
+  `$ref` ([upstream #69](https://github.com/hopin-team/twirp-ts/pull/69)).
+- **Server hooks share one context object.** The route handler replaced `ctx` with a copy in order to set
+  `methodName`, which meant a value stored on the context by `requestRouted` was invisible to `responseSent`
+  and every other later hook. `TwirpContext.methodName` is no longer `readonly`
+  ([upstream #53](https://github.com/hopin-team/twirp-ts/pull/53)).
+
+Versioning restarts at 3.0.0 to keep the lineage unambiguous against upstream's 2.5.0.

@@ -1,13 +1,22 @@
 {
-  "name": "twirp-ts",
-  "version": "2.5.0",
-  "description": "Typescript implementation of the Twirp protocol",
+  "name": "@smartsuite-foundry/twirp-ts",
+  "version": "3.0.0",
+  "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
   "main": "build/twirp/index.js",
+  "types": "build/twirp/index.d.ts",
   "bin": {
     "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts"
   },
   "repository": {
-    "url": "https://github.com/hopin-team/twirp-ts"
+    "type": "git",
+    "url": "git+https://github.com/SmartSuiteFoundry/twirp-ts.git"
+  },
+  "homepage": "https://github.com/SmartSuiteFoundry/twirp-ts#readme",
+  "bugs": {
+    "url": "https://github.com/SmartSuiteFoundry/twirp-ts/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
@@ -21,6 +30,9 @@
     "Typescript"
   ],
   "author": "Fabrizio Fenoglio",
+  "contributors": [
+    "SmartSuite <https://github.com/SmartSuiteFoundry>"
+  ],
   "license": "MIT",
   "dependencies": {
     "@protobuf-ts/plugin-framework": "^2.0.7",
