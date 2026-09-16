@@ -467,6 +467,15 @@ Do this in one move per package, including `peerDependencies`. An npm alias
 scoped name — npm installs a second physical copy — so a half-migrated tree ends up with both packages
 loaded at once. Migrate libraries before the services that depend on them.
 
+### ESM and CommonJS
+
+The package is built with [tshy](https://github.com/isaacs/tshy) and ships both dialects, so `import`
+and `require` both work and each gets its own type declarations. `protoc-gen-twirp_ts` remains a
+CommonJS entry point.
+
+Because both builds can be loaded in a single process, `TwirpError` is two different classes at
+runtime. That is what `isTwirpError` below exists to survive - use it rather than `instanceof`.
+
 ### `TwirpError.isTwirpError`
 
 Prefer it over `err instanceof TwirpError`:

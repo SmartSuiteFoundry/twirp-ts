@@ -1,7 +1,7 @@
 import * as http from "http";
 import * as https from "https";
 import { URL } from "url";
-import { TwirpError } from "./errors";
+import { TwirpError } from "./errors.js";
 
 export interface Rpc {
   request(

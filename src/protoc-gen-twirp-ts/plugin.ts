@@ -5,17 +5,17 @@ import {
   PluginBase,
   SymbolTable,
 } from "@protobuf-ts/plugin-framework";
-import { File } from "./file";
+import { File } from "./file.js";
 import {
   generateTwirp,
   generateTwirpClient,
   generateTwirpServer,
-} from "./gen/twirp";
-import { genGateway } from "./gen/gateway";
-import { createLocalTypeName } from "./local-type-name";
-import { Interpreter } from "./interpreter";
-import { genOpenAPI, OpenAPIType } from "./gen/open-api";
-import { genIndexFile } from "./gen/index-file";
+} from "./gen/twirp.js";
+import { genGateway } from "./gen/gateway.js";
+import { createLocalTypeName } from "./local-type-name.js";
+import { Interpreter } from "./interpreter.js";
+import { genOpenAPI, OpenAPIType } from "./gen/open-api.js";
+import { genIndexFile } from "./gen/index-file.js";
 
 export class ProtobuftsPlugin extends PluginBase<File> {
   parameters = {

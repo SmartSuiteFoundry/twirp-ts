@@ -1,7 +1,7 @@
 import {DescriptorRegistry, FileDescriptorProto, ServiceDescriptorProto, SymbolTable} from "@protobuf-ts/plugin-framework";
 import {code, imp, joinCode} from "ts-poet";
 import { camelCase } from "camel-case";
-import { createLocalTypeName } from "../local-type-name";
+import { createLocalTypeName } from "../local-type-name.js";
 import path from "path";
 
 const TwirpServer = imp("TwirpServer@@smartsuite-foundry/twirp-ts");

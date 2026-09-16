@@ -1,15 +1,15 @@
 import * as http from "http";
-import { TwirpContext } from "./context";
-import { chainHooks, isHook, ServerHooks } from "./hooks";
-import { Interceptor } from "./interceptors";
-import { getContentType, getRequestData, validateRequest } from "./request";
+import { TwirpContext } from "./context.js";
+import { chainHooks, isHook, ServerHooks } from "./hooks.js";
+import { Interceptor } from "./interceptors.js";
+import { getContentType, getRequestData, validateRequest } from "./request.js";
 import {
   BadRouteError,
   httpStatusFromErrorCode,
   InternalServerError,
   InternalServerErrorWith,
   TwirpError,
-} from "./errors";
+} from "./errors.js";
 
 /**
  * Twirp Server options

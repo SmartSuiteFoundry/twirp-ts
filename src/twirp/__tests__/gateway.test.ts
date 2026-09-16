@@ -1,11 +1,11 @@
 import http from "http";
 import { AddressInfo } from "net";
-import { TwirpServer } from "../server";
-import { createHaberdasherServer, HaberdasherTwirp } from "../__mocks__/service.twirp";
-import { TwirpContext } from "../context";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service";
-import { createGateway } from "../__mocks__/gateway.twirp";
-import { Gateway } from "../gateway";
+import { TwirpServer } from "../server.js";
+import { createHaberdasherServer, HaberdasherTwirp } from "../__mocks__/service.twirp.js";
+import { TwirpContext } from "../context.js";
+import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import { createGateway } from "../__mocks__/gateway.twirp.js";
+import { Gateway } from "../gateway.js";
 import supertest from "supertest";
 import { createHttpTerminator } from "http-terminator";
 

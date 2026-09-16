@@ -7,8 +7,8 @@ import {
   Interceptor,
   TwirpContentType,
   chainInterceptors,
-} from "../index";
-import { Size, Hat, FindHatRPC, ListHatRPC } from "./service";
+} from "../index.js";
+import { Size, Hat, FindHatRPC, ListHatRPC } from "./service.js";
 
 //==================================//
 //          Client Code             //

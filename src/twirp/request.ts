@@ -1,6 +1,6 @@
-import { TwirpContext } from "./context";
+import { TwirpContext } from "./context.js";
 import http from "http";
-import { BadRouteError, TwirpError, TwirpErrorCode } from "./errors";
+import { BadRouteError, TwirpError, TwirpErrorCode } from "./errors.js";
 
 /**
  * Supported Twirp Content-Type

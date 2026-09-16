@@ -2,11 +2,15 @@
   "name": "@smartsuite-foundry/twirp-ts",
   "version": "3.0.0",
   "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
-  "main": "build/twirp/index.js",
-  "types": "build/twirp/index.d.ts",
+  "type": "module",
   "bin": {
-    "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts"
+    "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts.cjs"
   },
+  "files": [
+    "dist",
+    "protoc-gen-twirp_ts.cjs"
+  ],
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SmartSuiteFoundry/twirp-ts.git"
@@ -21,12 +25,23 @@
   "engines": {
     "node": ">=20"
   },
+  "tshy": {
+    "exclude": [
+      "src/**/__tests__/**",
+      "src/**/__mocks__/**"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/twirp/index.ts",
+      "./plugin": "./src/protoc-gen-twirp-ts/plugin.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tshy",
     "format": "prettier -w src/**/*.ts",
     "lint": "prettier -c src/**/*.ts",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
+    "test:coverage": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --coverage"
   },
   "keywords": [
     "Twirp",
@@ -58,6 +73,7 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.12",
     "ts-proto": "^1.81.3",
+    "tshy": "^3.1.0",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
@@ -71,5 +87,31 @@
     "ts-proto": {
       "optional": true
     }
-  }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/twirp/index.d.ts",
+        "default": "./dist/esm/twirp/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/twirp/index.d.ts",
+        "default": "./dist/commonjs/twirp/index.js"
+      }
+    },
+    "./plugin": {
+      "import": {
+        "types": "./dist/esm/protoc-gen-twirp-ts/plugin.d.ts",
+        "default": "./dist/esm/protoc-gen-twirp-ts/plugin.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/protoc-gen-twirp-ts/plugin.d.ts",
+        "default": "./dist/commonjs/protoc-gen-twirp-ts/plugin.js"
+      }
+    }
+  },
+  "main": "./dist/commonjs/twirp/index.js",
+  "types": "./dist/commonjs/twirp/index.d.ts",
+  "module": "./dist/esm/twirp/index.js"
 }

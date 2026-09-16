@@ -2,15 +2,15 @@ import * as http from "http";
 import { parse } from "querystring";
 import * as dotObject from "dot-object";
 import { MatchFunction, MatchResult } from "path-to-regexp";
-import { getRequestData } from "./request";
+import { getRequestData } from "./request.js";
 import {
   BadRouteError,
   NotFoundError,
   TwirpError,
   TwirpErrorCode,
-} from "./errors";
-import { HttpClientOptions, NodeHttpRPC } from "./http.client";
-import { writeError } from "./server";
+} from "./errors.js";
+import { HttpClientOptions, NodeHttpRPC } from "./http.client.js";
+import { writeError } from "./server.js";
 
 export enum Pattern {
   POST = "post",

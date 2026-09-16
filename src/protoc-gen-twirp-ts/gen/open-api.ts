@@ -14,8 +14,8 @@ import {
 } from "@protobuf-ts/plugin-framework";
 import * as yaml from 'yaml';
 import { OpenAPIV3 } from "openapi-types";
-import { createLocalTypeName } from "../local-type-name";
-import { getMethod, HttpOption, Pattern } from "./gateway";
+import { createLocalTypeName } from "../local-type-name.js";
+import { getMethod, HttpOption, Pattern } from "./gateway.js";
 
 interface OpenAPIDoc {
   fileName: string,

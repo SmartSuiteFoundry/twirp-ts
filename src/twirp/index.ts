@@ -1,8 +1,8 @@
-export * from "./context";
-export * from "./server";
-export * from "./interceptors";
-export * from "./hooks";
-export * from "./errors";
-export * from "./gateway";
-export * from "./http.client";
-export { TwirpContentType, TwirpRequest } from "./request";
+export * from "./context.js";
+export * from "./server.js";
+export * from "./interceptors.js";
+export * from "./hooks.js";
+export * from "./errors.js";
+export * from "./gateway.js";
+export * from "./http.client.js";
+export { TwirpContentType, TwirpRequest } from "./request.js";

@@ -6,7 +6,7 @@ import {
   RequiredArgumentError,
   TwirpError,
   TwirpErrorCode,
-} from "../errors";
+} from "../errors.js";
 
 describe("Twirp errors", () => {
   it("will render a full error", () => {

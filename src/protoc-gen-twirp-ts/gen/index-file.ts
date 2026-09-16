@@ -1,5 +1,5 @@
 import { DescriptorRegistry } from "@protobuf-ts/plugin-framework";
-import { File } from "../file";
+import { File } from "../file.js";
 
 export function genIndexFile(registry: DescriptorRegistry, files: File[]) {
   const fileToExport = registry.allFiles()
