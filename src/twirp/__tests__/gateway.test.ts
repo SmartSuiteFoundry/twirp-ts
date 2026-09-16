@@ -1,10 +1,11 @@
 import http from "http";
-import { TwirpServer } from "../server";
-import { createHaberdasherServer, HaberdasherTwirp } from "../__mocks__/service.twirp";
-import { TwirpContext } from "../context";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service";
-import { createGateway } from "../__mocks__/gateway.twirp";
-import { Gateway } from "../gateway";
+import { AddressInfo } from "net";
+import { TwirpServer } from "../server.js";
+import { createHaberdasherServer, HaberdasherTwirp } from "../__mocks__/service.twirp.js";
+import { TwirpContext } from "../context.js";
+import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import { createGateway } from "../__mocks__/gateway.twirp.js";
+import { Gateway } from "../gateway.js";
 import supertest from "supertest";
 import { createHttpTerminator } from "http-terminator";
 
@@ -125,25 +126,25 @@ describe("Gateway", () => {
 
     const gateway = createGateway();
 
-    const twirpServerPort = 9999;
     const twirpServer = http.createServer(server.httpHandler());
     const httpTerminator1 = createHttpTerminator({
       server: twirpServer,
     });
 
-    const gatewayServerPort = 9998;
-    const gatewayServer = http.createServer(gateway.reverseProxy({
-      baseUrl: "http://localhost:9999/twirp",
-    }));
-
-    const httpTerminator2 = createHttpTerminator({
-      server: gatewayServer,
-    });
-
     // twirp server
-    twirpServer.listen(twirpServerPort, async () => {
-        // reverse proxy server
-      gatewayServer.listen(gatewayServerPort, async () => {
+    twirpServer.listen(0, async () => {
+      const twirpServerPort = (twirpServer.address() as AddressInfo).port;
+
+      const gatewayServer = http.createServer(gateway.reverseProxy({
+        baseUrl: `http://localhost:${twirpServerPort}/twirp`,
+      }));
+
+      const httpTerminator2 = createHttpTerminator({
+        server: gatewayServer,
+      });
+
+      // reverse proxy server
+      gatewayServer.listen(0, async () => {
         const response = await supertest(gatewayServer)
           .post('/hat')
           .send({

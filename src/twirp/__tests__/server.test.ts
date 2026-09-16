@@ -1,259 +1,300 @@
-import * as http from 'http';
-import supertest from 'supertest';
-import {createHaberdasherServer, HaberdasherTwirp} from "../__mocks__/service.twirp";
-import {TwirpContext} from "../context";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service";
-import {TwirpError, TwirpErrorCode} from "../errors";
-import {TwirpServer} from "../server";
+import * as http from "http";
+import supertest from "supertest";
+import {
+  createHaberdasherServer,
+  HaberdasherTwirp,
+} from "../__mocks__/service.twirp.js";
+import { TwirpContext } from "../context.js";
+import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import { TwirpError, TwirpErrorCode } from "../errors.js";
+import { TwirpServer } from "../server.js";
+import { jest } from "@jest/globals";
 
 describe("Server twirp specification", () => {
-
-    let server: http.Server
-    let twirpServer: TwirpServer<any>
-    beforeEach(() => {
-        twirpServer = createHaberdasherServer({
-            async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
-                return Hat.create({
-                    name: "cap",
-                    color: "blue",
-                    inches: 3,
-                });
-            },
-            async FindHat(ctx, request): Promise<FindHatRPC> {
-                return request;
-            },
-            async ListHat(ctx, request): Promise<ListHatRPC> {
-                return request;
-            }
+  let server: http.Server;
+  let twirpServer: TwirpServer<any>;
+  beforeEach(() => {
+    twirpServer = createHaberdasherServer({
+      async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
+        return Hat.create({
+          name: "cap",
+          color: "blue",
+          inches: 3,
         });
-
-        server = http.createServer(twirpServer.httpHandler());
-    })
-
-    it("support only POST requests", async () => {
-        const unsupportedMethods = ["get", "put", "patch", "delete", "options"]
-
-        const tests = unsupportedMethods.map(async (method) => {
-            const dynamicSupertest = supertest(server) as {[key:string]: (...args: any[]) => supertest.Test} & supertest.SuperTest<supertest.Test>
-
-            const resp = await dynamicSupertest[method]("/invalid-url")
-                .set('Content-Type', 'application/json')
-                .expect('Content-Type', "application/json")
-                .expect(404);
-
-            expect(resp.body).toEqual({
-                code: TwirpErrorCode.BadRoute,
-                msg: `unsupported method ${method.toUpperCase()} (only POST is allowed)`,
-                meta: {
-                    twirp_invalid_route: `${method.toUpperCase()} /invalid-url`,
-                }
-            })
-        });
-
-        await Promise.all(tests);
-
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/json')
-            .expect('Content-Type', "application/json")
-            .expect(200);
+      },
+      async FindHat(ctx, request): Promise<FindHatRPC> {
+        return request;
+      },
+      async ListHat(ctx, request): Promise<ListHatRPC> {
+        return request;
+      },
     });
 
-    it("support only application/json and application/protobuf content-type", async () => {
-        const resp = await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'invalid/json')
-            .expect('Content-Type', "application/json")
-            .expect(404);
+    server = http.createServer(twirpServer.httpHandler());
+  });
 
-        expect(resp.body).toEqual({
-            code: "bad_route",
-            meta: {
-                twirp_invalid_route: "POST /twirp/twirp.example.haberdasher.Haberdasher/MakeHat"
-            },
-            msg: "unexpected Content-Type: invalid/json"
-        });
+  afterEach(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        if (!server.listening) {
+          resolve();
+          return;
+        }
+        server.close((err) => (err ? reject(err) : resolve()));
+      })
+  );
 
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/json')
-            .expect('Content-Type', "application/json")
-            .expect(200);
+  it("support only POST requests", async () => {
+    const unsupportedMethods = ["get", "put", "patch", "delete", "options"];
 
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/protobuf')
-            .expect('Content-Type', "application/protobuf")
-            .expect(200);
-    })
+    // supertest() lazily calls listen(0) on the server it is given, so the
+    // parallel requests below would otherwise race to bind the same one.
+    await new Promise<void>((resolve) => server.listen(0, resolve));
 
-    describe("url must match [<prefix>]/[<package>.]<Service>/<Method>",() => {
-        it("will error if url is malformed", async () => {
-            const resp = await supertest(server).post("/invalid-url-format")
-                .expect('Content-Type', "application/json")
-                .expect(404);
+    const tests = unsupportedMethods.map(async (method) => {
+      const dynamicSupertest = supertest(server) as unknown as {
+        [key: string]: (...args: any[]) => supertest.Test;
+      };
 
-            expect(resp.body).toEqual({
-                code: TwirpErrorCode.BadRoute,
-                msg: `no handler for path /invalid-url-format`,
-                meta: {
-                    twirp_invalid_route: `POST /invalid-url-format`,
-                }
-            });
-        });
+      const resp = await dynamicSupertest[method]("/invalid-url")
+        .set("Content-Type", "application/json")
+        .expect("Content-Type", "application/json")
+        .expect(404);
 
-        it("succeeds when url is properly constructed", async () => {
-            await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-                .set('Content-Type', 'application/json')
-                .expect('Content-Type', "application/json")
-                .expect(200);
-        })
+      expect(resp.body).toEqual({
+        code: TwirpErrorCode.BadRoute,
+        msg: `unsupported method ${method.toUpperCase()} (only POST is allowed)`,
+        meta: {
+          twirp_invalid_route: `${method.toUpperCase()} /invalid-url`,
+        },
+      });
+    });
 
-        it("must respect the prefix", async () => {
-            const resp = await supertest(server).post("/twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat")
-                .set('Content-Type', 'application/json')
-                .expect('Content-Type', "application/json")
-                .expect(404);
+    await Promise.all(tests);
 
-            expect(resp.body).toEqual({
-                code: "bad_route",
-                meta: {
-                    twirp_invalid_route: "POST /twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat"
-                },
-                msg: "invalid path prefix /twirp-not-existing, expected /twirp, on path /twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat"
-            })
-        });
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/json")
+      .expect("Content-Type", "application/json")
+      .expect(200);
+  });
 
-        it("must have a specified handler", async () => {
-            const resp = await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists")
-                .set('Content-Type', 'application/json')
-                .expect('Content-Type', "application/json")
-                .expect(404);
+  it("support only application/json and application/protobuf content-type", async () => {
+    const resp = await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "invalid/json")
+      .expect("Content-Type", "application/json")
+      .expect(404);
 
-            expect(resp.body).toEqual({
-                code: "bad_route",
-                meta: {
-                    twirp_invalid_route: "POST /twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists"
-                },
-                msg: "no handler for path /twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists"
-            })
-        })
+    expect(resp.body).toEqual({
+      code: "bad_route",
+      meta: {
+        twirp_invalid_route:
+          "POST /twirp/twirp.example.haberdasher.Haberdasher/MakeHat",
+      },
+      msg: "unexpected Content-Type: invalid/json",
+    });
 
-        it("support rawBody Buffer", async () => {
-            server = http.createServer(async (req, res) => {
-                (req as any).rawBody = Buffer.from(JSON.stringify({
-                    hatId: '1234',
-                }))
-                await twirpServer.httpHandler()(req, res)
-            })
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/json")
+      .expect("Content-Type", "application/json")
+      .expect(200);
 
-            const response = await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/FindHat")
-              .set('Content-Type', 'application/json')
-              .expect('Content-Type', "application/json")
-              .expect(200);
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/protobuf")
+      .expect("Content-Type", "application/protobuf")
+      .expect(200);
+  });
 
-            expect(response.body).toEqual({
-                hat_id: '1234'
-            })
-        })
-    })
-})
+  describe("url must match [<prefix>]/[<package>.]<Service>/<Method>", () => {
+    it("will error if url is malformed", async () => {
+      const resp = await supertest(server)
+        .post("/invalid-url-format")
+        .expect("Content-Type", "application/json")
+        .expect(404);
+
+      expect(resp.body).toEqual({
+        code: TwirpErrorCode.BadRoute,
+        msg: `no handler for path /invalid-url-format`,
+        meta: {
+          twirp_invalid_route: `POST /invalid-url-format`,
+        },
+      });
+    });
+
+    it("succeeds when url is properly constructed", async () => {
+      await supertest(server)
+        .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+        .set("Content-Type", "application/json")
+        .expect("Content-Type", "application/json")
+        .expect(200);
+    });
+
+    it("must respect the prefix", async () => {
+      const resp = await supertest(server)
+        .post(
+          "/twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat"
+        )
+        .set("Content-Type", "application/json")
+        .expect("Content-Type", "application/json")
+        .expect(404);
+
+      expect(resp.body).toEqual({
+        code: "bad_route",
+        meta: {
+          twirp_invalid_route:
+            "POST /twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat",
+        },
+        msg: "invalid path prefix /twirp-not-existing, expected /twirp, on path /twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat",
+      });
+    });
+
+    it("must have a specified handler", async () => {
+      const resp = await supertest(server)
+        .post(
+          "/twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists"
+        )
+        .set("Content-Type", "application/json")
+        .expect("Content-Type", "application/json")
+        .expect(404);
+
+      expect(resp.body).toEqual({
+        code: "bad_route",
+        meta: {
+          twirp_invalid_route:
+            "POST /twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists",
+        },
+        msg: "no handler for path /twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists",
+      });
+    });
+
+    it("support rawBody Buffer", async () => {
+      server = http.createServer(async (req, res) => {
+        (req as any).rawBody = Buffer.from(
+          JSON.stringify({
+            hatId: "1234",
+          })
+        );
+        await twirpServer.httpHandler()(req, res);
+      });
+
+      const response = await supertest(server)
+        .post("/twirp/twirp.example.haberdasher.Haberdasher/FindHat")
+        .set("Content-Type", "application/json")
+        .expect("Content-Type", "application/json")
+        .expect(200);
+
+      expect(response.body).toEqual({
+        hat_id: "1234",
+      });
+    });
+  });
+});
 
 describe("Hooks & Interceptors", () => {
-    let server: http.Server
-    let twirpServer: TwirpServer<HaberdasherTwirp>
-    beforeEach(() => {
-        twirpServer = createHaberdasherServer({
-            async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
-                return Hat.create({
-                    name: "cap",
-                    color: "blue",
-                    inches: 3,
-                });
-            },
-            async FindHat(ctx, request): Promise<FindHatRPC> {
-                return request;
-            },
-            async ListHat(ctx, request): Promise<ListHatRPC> {
-                return request;
-            }
+  let server: http.Server;
+  let twirpServer: TwirpServer<HaberdasherTwirp>;
+  beforeEach(() => {
+    twirpServer = createHaberdasherServer({
+      async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
+        return Hat.create({
+          name: "cap",
+          color: "blue",
+          inches: 3,
         });
-
-        server = http.createServer(twirpServer.httpHandler());
-    })
-
-    it("can add interceptors", async () => {
-        const interceptorSpy = jest.fn();
-        twirpServer.use(async (ctx, req, next) => {
-            interceptorSpy();
-            const resp = await next(ctx, next);
-            interceptorSpy();
-            return resp;
-        });
-
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/json')
-            .expect('Content-Type', "application/json")
-            .expect(200);
-
-        expect(interceptorSpy).toBeCalledTimes(2);
+      },
+      async FindHat(ctx, request): Promise<FindHatRPC> {
+        return request;
+      },
+      async ListHat(ctx, request): Promise<ListHatRPC> {
+        return request;
+      },
     });
 
-    it("can add hooks", async () => {
-        const hookSpy = jest.fn();
-        twirpServer.use({
-            requestReceived: (ctx) => {
-                hookSpy("received");
-            },
-            requestRouted: (ctx) => {
-                hookSpy("routed");
-            },
-            requestPrepared: (ctx) => {
-                hookSpy("prepared");
-            },
-            requestSent: (ctx) => {
-                hookSpy("sent");
-            },
-            error: (ctx, err) => {
-                hookSpy("error"); // will not be called
-            }
-        });
+    server = http.createServer(twirpServer.httpHandler());
+  });
 
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/json')
-            .expect('Content-Type', "application/json")
-            .expect(200);
-
-        expect(hookSpy).toBeCalledTimes(4);
-        expect(hookSpy).toBeCalledWith("received");
-        expect(hookSpy).toBeCalledWith("routed");
-        expect(hookSpy).toBeCalledWith("prepared");
-        expect(hookSpy).toBeCalledWith("sent");
+  it("can add interceptors", async () => {
+    const interceptorSpy = jest.fn();
+    twirpServer.use(async (ctx, req, next) => {
+      interceptorSpy();
+      const resp = await next(ctx, next);
+      interceptorSpy();
+      return resp;
     });
 
-    it("will invoke the error hook when an error occurs", async () => {
-        twirpServer = createHaberdasherServer({
-            async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
-                throw new TwirpError(TwirpErrorCode.Internal, "test error");
-            },
-            async FindHat(ctx, request): Promise<FindHatRPC> {
-                return request;
-            },
-            async ListHat(ctx, request): Promise<ListHatRPC> {
-                return request;
-            }
-        });
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/json")
+      .expect("Content-Type", "application/json")
+      .expect(200);
 
-        const hookSpy = jest.fn();
-        twirpServer.use({
-            error: (ctx, err) => {
-                hookSpy("error"); // will not be called
-            }
-        });
+    expect(interceptorSpy).toHaveBeenCalledTimes(2);
+  });
 
-        server = http.createServer(twirpServer.httpHandler());
+  it("can add hooks", async () => {
+    const hookSpy = jest.fn();
+    twirpServer.use({
+      requestReceived: (ctx) => {
+        hookSpy("received");
+      },
+      requestRouted: (ctx) => {
+        hookSpy("routed");
+      },
+      requestPrepared: (ctx) => {
+        hookSpy("prepared");
+      },
+      requestSent: (ctx) => {
+        hookSpy("sent");
+      },
+      error: (ctx, err) => {
+        hookSpy("error"); // will not be called
+      },
+    });
 
-        await supertest(server).post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
-            .set('Content-Type', 'application/json')
-            .expect('Content-Type', "application/json")
-            .expect(500);
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/json")
+      .expect("Content-Type", "application/json")
+      .expect(200);
 
-        expect(hookSpy).toBeCalledWith("error");
-    })
+    expect(hookSpy).toHaveBeenCalledTimes(4);
+    expect(hookSpy).toHaveBeenCalledWith("received");
+    expect(hookSpy).toHaveBeenCalledWith("routed");
+    expect(hookSpy).toHaveBeenCalledWith("prepared");
+    expect(hookSpy).toHaveBeenCalledWith("sent");
+  });
+
+  it("will invoke the error hook when an error occurs", async () => {
+    twirpServer = createHaberdasherServer({
+      async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
+        throw new TwirpError(TwirpErrorCode.Internal, "test error");
+      },
+      async FindHat(ctx, request): Promise<FindHatRPC> {
+        return request;
+      },
+      async ListHat(ctx, request): Promise<ListHatRPC> {
+        return request;
+      },
+    });
+
+    const hookSpy = jest.fn();
+    twirpServer.use({
+      error: (ctx, err) => {
+        hookSpy("error"); // will not be called
+      },
+    });
+
+    server = http.createServer(twirpServer.httpHandler());
+
+    await supertest(server)
+      .post("/twirp/twirp.example.haberdasher.Haberdasher/MakeHat")
+      .set("Content-Type", "application/json")
+      .expect("Content-Type", "application/json")
+      .expect(500);
+
+    expect(hookSpy).toHaveBeenCalledWith("error");
+  });
 });

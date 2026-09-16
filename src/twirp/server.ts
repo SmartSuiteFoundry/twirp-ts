@@ -1,15 +1,15 @@
 import * as http from "http";
-import { TwirpContext } from "./context";
-import { chainHooks, isHook, ServerHooks } from "./hooks";
-import { Interceptor } from "./interceptors";
-import { getContentType, getRequestData, validateRequest } from "./request";
+import { TwirpContext } from "./context.js";
+import { chainHooks, isHook, ServerHooks } from "./hooks.js";
+import { Interceptor } from "./interceptors.js";
+import { getContentType, getRequestData, validateRequest } from "./request.js";
 import {
   BadRouteError,
   httpStatusFromErrorCode,
   InternalServerError,
   InternalServerErrorWith,
   TwirpError,
-} from "./errors";
+} from "./errors.js";
 
 /**
  * Twirp Server options
@@ -259,10 +259,7 @@ export class TwirpServer<
  * @param res
  * @param error
  */
-export function writeError(
-  res: http.ServerResponse,
-  error: Error | TwirpError
-): void {
+export function writeError(res: http.ServerResponse, error: unknown): void {
   const twirpError = mustBeTwirpError(error);
 
   res.setHeader("Content-Type", "application/json");
@@ -275,8 +272,8 @@ export function writeError(
  * otherwise it will wrap it into an InternalError
  * @param err
  */
-function mustBeTwirpError(err: Error | TwirpError): TwirpError {
-  if (err instanceof TwirpError) {
+function mustBeTwirpError(err: unknown): TwirpError {
+  if (TwirpError.isTwirpError(err)) {
     return err;
   }
   return new InternalServerErrorWith(err);

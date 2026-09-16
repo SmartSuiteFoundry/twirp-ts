@@ -1,14 +1,15 @@
 import * as http from "http";
+import { AddressInfo } from "net";
 import {createHttpTerminator, HttpTerminator} from "http-terminator";
 import {
     createHaberdasherServer,
     HaberdasherClientJSON,
     HaberdasherClientProtobuf
-} from "../__mocks__/service.twirp";
-import {TwirpContext} from "../context";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service";
-import {NodeHttpRPC} from "../http.client";
-import {InternalServerError, TwirpError, TwirpErrorCode} from "../errors";
+} from "../__mocks__/service.twirp.js";
+import {TwirpContext} from "../context.js";
+import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import {NodeHttpRPC} from "../http.client.js";
+import {InternalServerError, TwirpError, TwirpErrorCode} from "../errors.js";
 
 describe("Twirp Clients", () => {
 
@@ -40,11 +41,10 @@ describe("Twirp Clients", () => {
     })
 
     it("can call methods using the JSON client", (done) => {
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientJSON(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             const hat = await client.MakeHat({
@@ -65,11 +65,10 @@ describe("Twirp Clients", () => {
     });
 
     it("can call methods using the Protobuf client", (done) => {
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             const hat = await client.MakeHat({
@@ -110,11 +109,10 @@ describe("Twirp Clients", () => {
             server,
         });
 
-        const port = 9999;
-
-        server.listen(port, async () => {
+        server.listen(0, async () => {
+            const port = (server.address() as AddressInfo).port;
             const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: "http://localhost:9999/twirp",
+                baseUrl: `http://localhost:${port}/twirp`,
             }));
 
             let err: Error | undefined;
@@ -123,7 +121,7 @@ describe("Twirp Clients", () => {
                     inches: 1,
                 });
             } catch (e) {
-                err = e;
+                err = e as Error;
             }
 
 

@@ -1,5 +1,5 @@
 import * as http from "http";
-import { TwirpContentType } from "./request";
+import { TwirpContentType } from "./request.js";
 
 export interface TwirpContext<
   Request = http.IncomingMessage,
@@ -7,7 +7,7 @@ export interface TwirpContext<
 > {
   readonly packageName: string;
   readonly serviceName: string;
-  readonly methodName: string;
+  methodName: string;
 
   readonly contentType: TwirpContentType;
   readonly req: Request;

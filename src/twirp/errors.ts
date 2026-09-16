@@ -1,18 +1,57 @@
 /**
  * Represents a twirp error
  */
+/**
+ * Marks TwirpError instances so they stay recognisable across duplicate copies
+ * of this package. Symbol.for is keyed on the global registry, so every copy
+ * agrees on it, unlike a class identity.
+ */
+const twirpErrorBrand = Symbol.for("twirp-ts.TwirpError");
+
 export class TwirpError extends Error {
+  /**
+   * Duplication-safe replacement for `err instanceof TwirpError`.
+   *
+   * A dependency tree can easily hold more than one copy of this package -
+   * through npm nesting, or while a codebase migrates between the published
+   * name and a fork - and `instanceof` is false between them. That silently
+   * turns a typed error (a 400, say) into an InternalServerError 500, because
+   * `mustBeTwirpError` fails to recognise it.
+   */
+  static isTwirpError(value: unknown): value is TwirpError {
+    if (typeof value !== "object" || value === null) {
+      return false;
+    }
+    if ((value as { [key: symbol]: unknown })[twirpErrorBrand] === true) {
+      return true;
+    }
+    // Copies older than this brand, e.g. upstream twirp-ts during a migration,
+    // are recognised structurally instead.
+    const candidate = value as Partial<TwirpError>;
+    return (
+      value instanceof Error &&
+      typeof candidate.code === "string" &&
+      typeof candidate.msg === "string"
+    );
+  }
+
   public readonly msg: string;
   public readonly code: TwirpErrorCode = TwirpErrorCode.Internal;
   public readonly meta: Record<string, string> = {};
 
-  private _originalCause?: Error;
+  /**
+   * The wrapped original error, as the standard ES2022 `Error.cause`.
+   * Narrowed from `unknown` because `withCause` always normalises to an Error.
+   */
+  declare cause?: Error;
 
   constructor(code: TwirpErrorCode, msg: string) {
     super(msg);
     this.code = code;
     this.msg = msg;
     Object.setPrototypeOf(this, TwirpError.prototype);
+    // Non-enumerable so it stays out of toJSON() and off the wire.
+    Object.defineProperty(this, twirpErrorBrand, { value: true });
   }
 
   /**
@@ -39,16 +78,19 @@ export class TwirpError extends Error {
    * @param err
    * @param addMeta
    */
-  public withCause(err: Error, addMeta: boolean = false) {
-    this._originalCause = err;
+  public withCause(err: unknown, addMeta: boolean = false) {
+    const cause = toError(err);
+    // Non-enumerable, matching how `new Error(msg, { cause })` defines it, so
+    // it stays out of JSON.stringify and off the wire.
+    Object.defineProperty(this, "cause", {
+      value: cause,
+      writable: true,
+      configurable: true,
+    });
     if (addMeta) {
-      this.withMeta("cause", err.message);
+      this.withMeta("cause", cause.message);
     }
     return this;
-  }
-
-  public cause() {
-    return this._originalCause;
   }
 
   /**
@@ -131,14 +173,23 @@ export class InternalServerError extends TwirpError {
  * InternalErrorWith makes an internal error, wrapping the original error and using it
  * for the error message, and with metadata "cause" with the original error type.
  * This function is used by Twirp services to wrap non-Twirp errors as internal errors.
- * The wrapped error can be extracted later with err.cause()
+ * The wrapped error can be extracted later with err.cause
  */
 export class InternalServerErrorWith extends InternalServerError {
-  constructor(err: Error) {
-    super(err.message);
-    this.withMeta("cause", err.name);
-    this.withCause(err);
+  constructor(err: unknown) {
+    const cause = toError(err);
+    super(cause.message);
+    this.withMeta("cause", cause.name);
+    this.withCause(cause);
   }
+}
+
+/**
+ * Normalises a caught value into an Error. A `catch` binding is `unknown`:
+ * anything can be thrown, not just Errors.
+ */
+export function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
 }
 
 /**

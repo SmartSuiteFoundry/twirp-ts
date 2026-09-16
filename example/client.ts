@@ -1,6 +1,6 @@
 import axios from "axios";
 import {HaberdasherClientJSON, HaberdasherClientProtobuf} from "./generated/service.twirp";
-import {NodeHttpRPC} from "../src/twirp";
+import {NodeHttpRPC} from "@smartsuite-foundry/twirp-ts";
 
 interface Rpc {
     request(

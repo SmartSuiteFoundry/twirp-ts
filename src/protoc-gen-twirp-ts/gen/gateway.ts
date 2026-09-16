@@ -3,8 +3,8 @@ import {writeFileSync} from  "fs"
 import { code, imp, joinCode } from "ts-poet";
 import { match, MatchFunction } from "path-to-regexp";
 
-const Gateway = imp("Gateway@twirp-ts");
-const GatewayPattern = imp("Pattern@twirp-ts");
+const Gateway = imp("Gateway@@smartsuite-foundry/twirp-ts");
+const GatewayPattern = imp("Pattern@@smartsuite-foundry/twirp-ts");
 const pathToRegexpMatch = imp("match@path-to-regexp");
 
 const debug = (content: any) => writeFileSync(__dirname + "/debug.json", JSON.stringify(content, null, 2),"utf-8")

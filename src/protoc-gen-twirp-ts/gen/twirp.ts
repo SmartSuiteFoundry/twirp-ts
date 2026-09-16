@@ -1,17 +1,17 @@
 import {DescriptorRegistry, FileDescriptorProto, ServiceDescriptorProto, SymbolTable} from "@protobuf-ts/plugin-framework";
 import {code, imp, joinCode} from "ts-poet";
 import { camelCase } from "camel-case";
-import { createLocalTypeName } from "../local-type-name";
+import { createLocalTypeName } from "../local-type-name.js";
 import path from "path";
 
-const TwirpServer = imp("TwirpServer@twirp-ts");
-const Interceptor = imp("Interceptor@twirp-ts");
-const RouterEvents = imp("RouterEvents@twirp-ts");
-const chainInterceptors = imp("chainInterceptors@twirp-ts");
-const TwirpContentType = imp("TwirpContentType@twirp-ts");
-const TwirpContext = imp("TwirpContext@twirp-ts");
-const TwirpError = imp("TwirpError@twirp-ts");
-const TwirpErrorCode = imp("TwirpErrorCode@twirp-ts");
+const TwirpServer = imp("TwirpServer@@smartsuite-foundry/twirp-ts");
+const Interceptor = imp("Interceptor@@smartsuite-foundry/twirp-ts");
+const RouterEvents = imp("RouterEvents@@smartsuite-foundry/twirp-ts");
+const chainInterceptors = imp("chainInterceptors@@smartsuite-foundry/twirp-ts");
+const TwirpContentType = imp("TwirpContentType@@smartsuite-foundry/twirp-ts");
+const TwirpContext = imp("TwirpContext@@smartsuite-foundry/twirp-ts");
+const TwirpError = imp("TwirpError@@smartsuite-foundry/twirp-ts");
+const TwirpErrorCode = imp("TwirpErrorCode@@smartsuite-foundry/twirp-ts");
 
 /**
  * Generates the client and server implementation of the twirp
@@ -251,7 +251,7 @@ function genRouteHandler(ctx: any, file: FileDescriptorProto, service: ServiceDe
     const cases = service.method.map(method => code`
     case "${formatMethodName(ctx, method.name!)}":
         return async (ctx: T, service: ${service.name}Twirp ,data: Buffer, interceptors?: ${Interceptor}<T, ${relativeMessageName(ctx, file, method.inputType)}, ${relativeMessageName(ctx, file, method.outputType)}>[]) => {
-            ctx = {...ctx, methodName: "${formatMethodName(ctx, method.name!)}" }
+            ctx.methodName = "${formatMethodName(ctx, method.name!)}"
             await events.onMatch(ctx);
             return handle${formatMethodName(ctx, method.name!, service.name)}Request(ctx, service, data, interceptors)
         }

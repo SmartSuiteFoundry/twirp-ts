@@ -5,4 +5,7 @@ src/protoc-gen-twirp-ts/node_modules
 debug.json
 .idea/
 build/
+dist/
+.tshy/
+.tshy-build/
 coverage/

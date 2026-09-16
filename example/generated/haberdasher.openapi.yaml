@@ -23,7 +23,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ListHatRPC"
-  "/hat/{hat_id}":
+  /hat/{hat_id}:
     get:
       summary: ""
       operationId: Haberdasher_FindHat

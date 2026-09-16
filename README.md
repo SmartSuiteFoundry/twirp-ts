@@ -6,8 +6,9 @@ Supported spec v7 and v8
 
 ----
 
-[![npm version](https://badge.fury.io/js/twirp-ts.svg)](https://badge.fury.io/js/twirp-ts)
-[![Coverage Status](https://coveralls.io/repos/github/hopin-team/twirp-ts/badge.svg?branch=main)](https://coveralls.io/github/hopin-team/twirp-ts?branch=main)
+> **This is SmartSuite's fork of [hopin-team/twirp-ts](https://github.com/hopin-team/twirp-ts)**, published as
+> `@smartsuite-foundry/twirp-ts`. Upstream has been unmaintained since May 2022. The fork carries fixes that
+> were left open upstream and keeps the toolchain current. See [Fork changes](#fork-changes).
 
 Table of Contents:
 
@@ -23,6 +24,7 @@ Table of Contents:
 - [Client](#twirp-client)
 - [Open API V3](#open-api-v3)
 - [Migrate to V2](#migrate-to-v2)
+- [Fork changes](#fork-changes)
 - [How to Upgrade](#how-to-upgrade)
 
 ## Getting Started
@@ -33,13 +35,13 @@ Table of Contents:
 Run the following to install the package
 
 ```
-npm i twirp-ts @protobuf-ts/plugin@next -S
+npm i @smartsuite-foundry/twirp-ts @protobuf-ts/plugin -S
 ```
 
 or
 
 ```
-yarn add twirp-ts @protobuf-ts/plugin@next
+yarn add @smartsuite-foundry/twirp-ts @protobuf-ts/plugin
 ```
 
 Install `ts-proto` instead if you prefer it over `@protobuf-ts`
@@ -149,7 +151,7 @@ Once you've generated the server code you can simply start a server as following
 
 ```ts
 import * as http from "http";
-import {TwirpContext} from "twirp-ts";
+import {TwirpContext} from "@smartsuite-foundry/twirp-ts";
 import {createHaberdasherServer} from "./generated/haberdasher.twirp";
 import {Hat, Size} from "./generated/service";
 
@@ -279,7 +281,7 @@ You can certainly create custom errors that extend a `TwirpError`
 For Example:
 
 ```ts
-import {TwirpError, TwirpErrorCode} from "twirp-ts";
+import {TwirpError, TwirpErrorCode} from "@smartsuite-foundry/twirp-ts";
 
 class UnauthenticatedError extends TwirpError {
     constructor(traceId: string) {
@@ -439,3 +441,81 @@ Make sure that whenever you update `twirp-ts` you re-generate the server and cli
 ## Licence
 
 MIT <3
+
+## Fork changes
+
+This fork is published as `@smartsuite-foundry/twirp-ts`. Upstream `twirp-ts` has had no commit since
+2022-04-29 and no npm release since 2022-05-22.
+
+### Migrating from `twirp-ts`
+
+The code generator emits `@smartsuite-foundry/twirp-ts` into every `.twirp.ts`, so a codebase moves
+across by renaming the dependency and the import specifier:
+
+```diff
+-"twirp-ts": "^2.5.0"
++"@smartsuite-foundry/twirp-ts": "^3.0.0"
+```
+
+```diff
+-import { TwirpError } from "twirp-ts";
++import { TwirpError } from "@smartsuite-foundry/twirp-ts";
+```
+
+Do this in one move per package, including `peerDependencies`. An npm alias
+(`"twirp-ts": "npm:@smartsuite-foundry/twirp-ts@^3.0.0"`) does **not** satisfy a peer declared on the
+scoped name — npm installs a second physical copy — so a half-migrated tree ends up with both packages
+loaded at once. Migrate libraries before the services that depend on them.
+
+### ESM and CommonJS
+
+The package is built with [tshy](https://github.com/isaacs/tshy) and ships both dialects, so `import`
+and `require` both work and each gets its own type declarations. `protoc-gen-twirp_ts` remains a
+CommonJS entry point.
+
+Because both builds can be loaded in a single process, `TwirpError` is two different classes at
+runtime. That is what `isTwirpError` below exists to survive - use it rather than `instanceof`.
+
+### `cause` is the standard `Error.cause`
+
+`TwirpError.cause()` was a method; it is now the ES2022 `Error.cause` property.
+
+```diff
+-const original = err.cause();
++const original = err.cause;
+```
+
+`withCause()` is unchanged. Beyond dropping a bespoke API, this means Node, `util.inspect`, loggers
+and error reporters all understand the wrapped error - `util.inspect` prints it as `[cause]`, which
+it could not before. It is defined non-enumerably, exactly as `new Error(msg, { cause })` does, so it
+stays out of `JSON.stringify` and off the wire.
+
+### `TwirpError.isTwirpError`
+
+Prefer it over `err instanceof TwirpError`:
+
+```diff
+-if (err instanceof TwirpError) {
++if (TwirpError.isTwirpError(err)) {
+```
+
+`instanceof` compares class identity, so it is false between two copies of this package — which is
+exactly what a dependency tree holds while it is being migrated, or whenever npm nests a second copy.
+When that check fails inside the server, a typed error is rewrapped as an `InternalServerError`, so a
+400 silently becomes a 500. `isTwirpError` matches on a `Symbol.for` brand shared by every copy, and
+falls back to a structural check so instances from upstream `twirp-ts` are recognised too.
+
+### Changes since upstream 2.5.0
+
+- **Nested message components are emitted into the OpenAPI schema.** Previously `genSchema` skipped every
+  non-map message field, so any nested message referenced by a request or response was left as a dangling
+  `$ref` ([upstream #69](https://github.com/hopin-team/twirp-ts/pull/69)).
+- **`cause` is now the standard `Error.cause` property**, not a `cause()` method.
+- **`TwirpError.isTwirpError`** replaces `instanceof` checks inside the server and gateway, so a
+  duplicated copy of the package cannot silently downgrade a typed error to a 500.
+- **Server hooks share one context object.** The route handler replaced `ctx` with a copy in order to set
+  `methodName`, which meant a value stored on the context by `requestRouted` was invisible to `responseSent`
+  and every other later hook. `TwirpContext.methodName` is no longer `readonly`
+  ([upstream #53](https://github.com/hopin-team/twirp-ts/pull/53)).
+
+Versioning restarts at 3.0.0 to keep the lineage unambiguous against upstream's 2.5.0.

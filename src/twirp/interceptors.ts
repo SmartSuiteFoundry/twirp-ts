@@ -1,4 +1,4 @@
-import { TwirpContext } from "./context";
+import { TwirpContext } from "./context.js";
 
 // Interceptor is a form of middleware for Twirp requests, that can be installed on both
 // clients and servers. To intercept RPC calls in the client, use the option

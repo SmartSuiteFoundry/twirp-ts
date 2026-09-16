@@ -1,49 +1,81 @@
 {
-  "name": "twirp-ts",
-  "version": "2.5.0",
-  "description": "Typescript implementation of the Twirp protocol",
-  "main": "build/twirp/index.js",
+  "name": "@smartsuite-foundry/twirp-ts",
+  "version": "3.0.0",
+  "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
+  "type": "module",
   "bin": {
-    "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts"
+    "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts.cjs"
   },
+  "files": [
+    "dist",
+    "protoc-gen-twirp_ts.cjs"
+  ],
+  "sideEffects": false,
   "repository": {
-    "url": "https://github.com/hopin-team/twirp-ts"
+    "type": "git",
+    "url": "git+https://github.com/SmartSuiteFoundry/twirp-ts.git"
+  },
+  "homepage": "https://github.com/SmartSuiteFoundry/twirp-ts#readme",
+  "bugs": {
+    "url": "https://github.com/SmartSuiteFoundry/twirp-ts/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "tshy": {
+    "exclude": [
+      "src/**/__tests__/**",
+      "src/**/__mocks__/**"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/twirp/index.ts",
+      "./plugin": "./src/protoc-gen-twirp-ts/plugin.ts"
+    }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tshy",
+    "prepack": "tshy",
     "format": "prettier -w src/**/*.ts",
     "lint": "prettier -c src/**/*.ts",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
+    "test:coverage": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --coverage"
   },
   "keywords": [
     "Twirp",
     "Typescript"
   ],
   "author": "Fabrizio Fenoglio",
+  "contributors": [
+    "SmartSuite <https://github.com/SmartSuiteFoundry>"
+  ],
   "license": "MIT",
   "dependencies": {
-    "@protobuf-ts/plugin-framework": "^2.0.7",
+    "@protobuf-ts/plugin-framework": "^2.11.0",
     "camel-case": "^4.1.2",
-    "dot-object": "^2.1.4",
+    "dot-object": "^2.1.5",
     "path-to-regexp": "^6.2.0",
     "ts-poet": "^4.5.0",
-    "yaml": "^1.10.2"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@protobuf-ts/plugin": "^2.5.0",
+    "@protobuf-ts/plugin": "^2.11.1",
     "@types/dot-object": "^2.1.2",
-    "@types/jest": "^26.0.23",
-    "@types/node": "^15.12.2",
-    "@types/supertest": "^2.0.11",
-    "http-terminator": "^3.0.0",
-    "jest": "^27.0.4",
-    "openapi-types": "^9.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.20.3",
+    "@types/supertest": "^7.2.1",
+    "http-terminator": "^3.2.0",
+    "jest": "^30.5.1",
+    "openapi-types": "^12.1.3",
     "prettier": "^2.3.2",
-    "supertest": "^6.1.3",
-    "ts-jest": "^27.0.3",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.12",
     "ts-proto": "^1.81.3",
-    "typescript": "^4.3.2"
+    "tshy": "^3.1.0",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@protobuf-ts/plugin": "^2.5.0",
@@ -56,5 +88,31 @@
     "ts-proto": {
       "optional": true
     }
-  }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/twirp/index.d.ts",
+        "default": "./dist/esm/twirp/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/twirp/index.d.ts",
+        "default": "./dist/commonjs/twirp/index.js"
+      }
+    },
+    "./plugin": {
+      "import": {
+        "types": "./dist/esm/protoc-gen-twirp-ts/plugin.d.ts",
+        "default": "./dist/esm/protoc-gen-twirp-ts/plugin.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/protoc-gen-twirp-ts/plugin.d.ts",
+        "default": "./dist/commonjs/protoc-gen-twirp-ts/plugin.js"
+      }
+    }
+  },
+  "main": "./dist/commonjs/twirp/index.js",
+  "types": "./dist/commonjs/twirp/index.d.ts",
+  "module": "./dist/esm/twirp/index.js"
 }
