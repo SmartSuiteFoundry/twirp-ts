@@ -38,6 +38,7 @@
   },
   "scripts": {
     "build": "tshy",
+    "prepack": "tshy",
     "format": "prettier -w src/**/*.ts",
     "lint": "prettier -c src/**/*.ts",
     "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
