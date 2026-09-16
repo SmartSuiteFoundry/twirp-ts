@@ -1,22 +1,29 @@
-name: Publish
+name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  # semantic-release pushes the release commit and tag, and creates the release.
+  contents: write
+  issues: write
+  pull-requests: write
   # Lets npm exchange a short-lived OIDC token with the registry, so this
   # workflow needs no npm token. Requires a trusted publisher configured at
   # https://www.npmjs.com/package/@smartsuite-foundry/twirp-ts/access
   id-token: write
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # semantic-release works out the last release from the tags.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x
@@ -27,12 +34,6 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm run test
-      - name: Check the release tag matches package.json
-        run: |
-          tag="${GITHUB_REF_NAME#v}"
-          pkg="$(node -p 'require("./package.json").version')"
-          if [ "$tag" != "$pkg" ]; then
-            echo "tag $tag does not match package.json version $pkg" >&2
-            exit 1
-          fi
-      - run: npm publish --provenance
+      - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
