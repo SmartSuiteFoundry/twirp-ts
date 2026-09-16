@@ -1,4 +1,4 @@
-import { Gateway, Pattern } from "twirp-ts";
+import { Gateway, Pattern } from "@smartsuite-foundry/twirp-ts";
 import { match } from "path-to-regexp";
 
 export function createGateway() {

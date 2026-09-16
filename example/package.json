@@ -12,12 +12,15 @@
   "dependencies": {
     "axios": "^0.21.2",
     "express": "^4.17.1",
-    "twirp-ts": "^2.4.0",
-    "@protobuf-ts/plugin": "^2.0.0-alpha.27",
+    "@smartsuite-foundry/twirp-ts": "file:../",
+    "@protobuf-ts/plugin": "^2.11.1",
     "ts-proto": "^1.81.3"
   },
   "devDependencies": {
     "@types/express": "^4.17.12",
     "ts-node": "^10.0.0"
+  },
+  "overrides": {
+    "@smartsuite-foundry/twirp-ts": "file:../"
   }
 }
