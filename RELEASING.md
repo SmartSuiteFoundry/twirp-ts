@@ -11,7 +11,7 @@ automatically.
 
 Merge to `main`. That is the whole process.
 
-`.github/workflows/release.yaml` runs on every push to `main`, and semantic-release works out from
+`.github/workflows/publish.yaml` runs on every push to `main`, and semantic-release works out from
 the commits since the last tag whether there is anything to release:
 
 | Commit type | Effect |
@@ -26,6 +26,13 @@ tag, and commits the version bump back to `main` as `chore(release): x.y.z [skip
 
 **Merge, do not squash.** semantic-release reads the individual commits; squashing replaces them with
 the pull request title, so a release either comes out wrong or does not happen at all.
+
+## The workflow filename is load-bearing
+
+npm's trusted publisher configuration pins the **workflow filename**, and npm does not re-check it
+against the repository — it trusts what was typed at setup. Renaming this workflow breaks publishing
+with a `404 OIDC token exchange error - package not found`, which does not mention filenames at all.
+If you rename it, update the setting on npmjs.com in the same change.
 
 ## Why the repository is tagged from v3.0.0
 
@@ -51,7 +58,7 @@ Then, at `https://www.npmjs.com/package/<name>/access`:
 - Publisher: **GitHub Actions**
 - Organization or user: `SmartSuiteFoundry`
 - Repository: the repository
-- Workflow filename: `release.yaml`
+- Workflow filename: `publish.yaml`
 
 Prefer this to minting a CI token and deleting it later — a token that never exists cannot leak.
 
