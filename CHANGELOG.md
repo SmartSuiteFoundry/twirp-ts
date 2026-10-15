@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.0.1...v3.1.0) (2026-10-15)
+
+### Features
+
+* ship an esm-extensions binary ([517575c](https://github.com/SmartSuiteFoundry/twirp-ts/commit/517575c60ca8e25646b064029db5c5b3c904d24b))
+
 ## [3.0.1](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.0.0...v3.0.1) (2026-09-16)
 
 ### Bug Fixes
