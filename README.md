@@ -490,6 +490,29 @@ and error reporters all understand the wrapped error - `util.inspect` prints it 
 it could not before. It is defined non-enumerably, exactly as `new Error(msg, { cause })` does, so it
 stays out of `JSON.stringify` and off the wire.
 
+### `twirp-ts-esm-extensions`
+
+Neither `protoc-gen-ts` nor `protoc-gen-twirp_ts` emits the explicit file extensions that nodenext
+requires, so a package compiling its generated code as ESM has to add them after codegen. This
+package ships a binary that does it:
+
+```jsonc
+"codegen:ts": "... && npm run codegen:ts:esm",
+"codegen:ts:esm": "twirp-ts-esm-extensions src"
+```
+
+It rewrites every relative specifier under the given directory (default `src`), resolving `./x` to
+`./x.js` or `./x/index.js`, leaving bare package specifiers and already-extensioned paths alone. It
+is idempotent, and exits non-zero listing any specifier it could not resolve.
+
+The same logic is importable, if you need it in a script of your own:
+
+```ts
+import { applyEsmExtensions } from "@smartsuite-foundry/twirp-ts/esm-extensions";
+
+const { changed, unresolved } = await applyEsmExtensions("src");
+```
+
 ### `TwirpError.isTwirpError`
 
 Prefer it over `err instanceof TwirpError`:
@@ -510,6 +533,8 @@ falls back to a structural check so instances from upstream `twirp-ts` are recog
 - **Nested message components are emitted into the OpenAPI schema.** Previously `genSchema` skipped every
   non-map message field, so any nested message referenced by a request or response was left as a dangling
   `$ref` ([upstream #69](https://github.com/hopin-team/twirp-ts/pull/69)).
+- **`twirp-ts-esm-extensions`**, a binary that adds the file extensions nodenext requires to
+  generated code, so each consuming repo does not carry its own copy of that script.
 - **`cause` is now the standard `Error.cause` property**, not a `cause()` method.
 - **`TwirpError.isTwirpError`** replaces `instanceof` checks inside the server and gateway, so a
   duplicated copy of the package cannot silently downgrade a typed error to a 500.
