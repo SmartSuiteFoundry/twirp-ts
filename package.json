@@ -4,8 +4,8 @@
   "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
   "type": "module",
   "bin": {
-    "protoc-gen-twirp_ts": "./protoc-gen-twirp_ts.cjs",
-    "twirp-ts-esm-extensions": "./esm-extensions.mjs"
+    "protoc-gen-twirp_ts": "protoc-gen-twirp_ts.cjs",
+    "twirp-ts-esm-extensions": "esm-extensions.mjs"
   },
   "files": [
     "dist",
