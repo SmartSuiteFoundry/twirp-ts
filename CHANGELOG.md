@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.0...v3.1.1) (2026-10-15)
+
+### Bug Fixes
+
+* pkf fix ([70b322f](https://github.com/SmartSuiteFoundry/twirp-ts/commit/70b322f645e577adf3dd9e13c43ce9c7a791e216))
+
 ## [3.1.0](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.0.1...v3.1.0) (2026-10-15)
 
 ### Features
