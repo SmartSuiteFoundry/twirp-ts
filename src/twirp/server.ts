@@ -1,8 +1,5 @@
-import type * as http from "http";
+import type * as http from "node:http";
 import type { TwirpContext } from "./context.js";
-import { chainHooks, isHook, type ServerHooks } from "./hooks.js";
-import type { Interceptor } from "./interceptors.js";
-import { getContentType, getRequestData, validateRequest } from "./request.js";
 import {
   BadRouteError,
   httpStatusFromErrorCode,
@@ -10,13 +7,16 @@ import {
   InternalServerErrorWith,
   TwirpError,
 } from "./errors.js";
+import { chainHooks, isHook, type ServerHooks } from "./hooks.js";
+import type { Interceptor } from "./interceptors.js";
+import { getContentType, getRequestData, validateRequest } from "./request.js";
 
 /**
  * Twirp Server options
  */
 interface TwirpServerOptions<
   T extends object,
-  S extends TwirpContext = TwirpContext
+  S extends TwirpContext = TwirpContext,
 > {
   service: T;
   packageName: string;
@@ -39,7 +39,7 @@ export type TwirpHandler<T, S extends TwirpContext = TwirpContext> = (
   ctx: S,
   service: T,
   data: Buffer,
-  interceptors?: Interceptor<S, any, any>[]
+  interceptors?: Interceptor<S, any, any>[],
 ) => Promise<Uint8Array | string>;
 
 /**
@@ -57,7 +57,7 @@ type keys<T extends object> = Array<keyof T>;
  */
 export class TwirpServer<
   T extends object,
-  S extends TwirpContext = TwirpContext
+  S extends TwirpContext = TwirpContext,
 > {
   public readonly packageName: string;
   public readonly serviceName: string;
@@ -69,7 +69,7 @@ export class TwirpServer<
   private interceptors: Interceptor<S, any, any>[] = [];
   private matchRoute: (
     method: string,
-    events: RouterEvents<S>
+    events: RouterEvents<S>,
   ) => TwirpHandler<T, S>;
 
   constructor(options: TwirpServerOptions<T, S>) {
@@ -136,7 +136,7 @@ export class TwirpServer<
    */
   public matchingPath() {
     const baseRegex = this.baseURI().replace(/\./g, "\\.");
-    return new RegExp(`${baseRegex}\/(${this.methodList.join("|")})`);
+    return new RegExp(`${baseRegex}/(${this.methodList.join("|")})`);
   }
 
   /**
@@ -156,7 +156,7 @@ export class TwirpServer<
    */
   protected createContext(
     req: http.IncomingMessage,
-    res: http.ServerResponse
+    res: http.ServerResponse,
   ): S {
     return {
       packageName: this.packageName,
@@ -176,7 +176,7 @@ export class TwirpServer<
    */
   private async _httpHandler(
     req: http.IncomingMessage,
-    resp: http.ServerResponse
+    resp: http.ServerResponse,
   ) {
     const ctx = this.createContext(req, resp);
 
@@ -186,7 +186,7 @@ export class TwirpServer<
       const { method, mimeContentType } = validateRequest(
         ctx,
         req,
-        this.pathPrefix || ""
+        this.pathPrefix || "",
       );
 
       const handler = this.matchRoute(method, {
@@ -204,7 +204,7 @@ export class TwirpServer<
         ctx,
         this.service,
         body,
-        this.interceptors
+        this.interceptors,
       );
 
       await Promise.all([
@@ -240,7 +240,7 @@ export class TwirpServer<
   protected async invokeHook(
     hookName: keyof ServerHooks<S>,
     ctx: S,
-    err?: TwirpError
+    err?: TwirpError,
   ) {
     if (this.hooks.length === 0) {
       return;

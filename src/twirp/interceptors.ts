@@ -11,12 +11,12 @@ import type { TwirpContext } from "./context.js";
 export type Next<
   Context extends TwirpContext = TwirpContext,
   Request = any,
-  Response = any
+  Response = any,
 > = (ctx: Context, typedRequest: Request) => Promise<Response>;
 export type Interceptor<Context extends TwirpContext, Request, Response> = (
   ctx: Context,
   typedRequest: Request,
-  next: Next<Context, Request, Response>
+  next: Next<Context, Request, Response>,
 ) => Promise<Response>;
 
 // chains multiple Interceptors into a single Interceptor.
@@ -25,7 +25,7 @@ export type Interceptor<Context extends TwirpContext, Request, Response> = (
 export function chainInterceptors<
   Context extends TwirpContext,
   Request,
-  Response
+  Response,
 >(
   ...interceptors: Interceptor<Context, Request, Response>[]
 ): Interceptor<Context, Request, Response> | undefined {

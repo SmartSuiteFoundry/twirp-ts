@@ -1,9 +1,9 @@
-import type * as http from "http";
+import type * as http from "node:http";
 import type { TwirpContentType } from "./request.js";
 
 export interface TwirpContext<
   Request = http.IncomingMessage,
-  Response = http.ServerResponse
+  Response = http.ServerResponse,
 > {
   readonly packageName: string;
   readonly serviceName: string;

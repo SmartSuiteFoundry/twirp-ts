@@ -16,11 +16,6 @@
     "verbatimModuleSyntax": true,
     "inlineSources": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/__tests__/**",
-    "src/**/__mocks__/**"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/__tests__/**", "src/**/__mocks__/**"]
 }

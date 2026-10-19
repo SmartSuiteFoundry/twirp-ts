@@ -63,7 +63,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
         }
         console.warn(
           "hook requestPrepared is deprecated and will be removed in the next release. " +
-            "Please use responsePrepared instead."
+            "Please use responsePrepared instead.",
         );
         await hook.requestPrepared(ctx);
       }
@@ -83,7 +83,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
         }
         console.warn(
           "hook requestSent is deprecated and will be removed in the next release. " +
-            "Please use responseSent instead."
+            "Please use responseSent instead.",
         );
         await hook.requestSent(ctx);
       }
@@ -118,7 +118,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
 }
 
 export function isHook<T extends TwirpContext = TwirpContext>(
-  object: any
+  object: any,
 ): object is ServerHooks<T> {
   return (
     "requestReceived" in object ||

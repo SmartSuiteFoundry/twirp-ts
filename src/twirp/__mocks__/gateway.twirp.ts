@@ -1,5 +1,5 @@
-import { Gateway, type Pattern } from "../node.js";
 import { match } from "path-to-regexp";
+import { Gateway, type Pattern } from "../node.js";
 
 export function createGateway() {
   return new Gateway({

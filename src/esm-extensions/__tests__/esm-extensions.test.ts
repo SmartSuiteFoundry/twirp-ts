@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
 import { applyEsmExtensions } from "../index.js";
 
 let root: string;
@@ -48,7 +48,9 @@ describe("applyEsmExtensions", () => {
 
     await applyEsmExtensions(root);
 
-    expect(await read("index.test.ts")).toBe('import { a } from "./index.js";\n');
+    expect(await read("index.test.ts")).toBe(
+      'import { a } from "./index.js";\n',
+    );
   });
 
   it("leaves a specifier that already has an extension", async () => {

@@ -1,8 +1,7 @@
-import type * as http from "http";
-import { parse } from "querystring";
+import type * as http from "node:http";
+import { parse } from "node:querystring";
 import dotObject from "dot-object";
 import type { MatchFunction, MatchResult, ParamData } from "path-to-regexp";
-import { getRequestData } from "./request.js";
 import {
   BadRouteError,
   NotFoundError,
@@ -10,6 +9,7 @@ import {
   TwirpErrorCode,
 } from "./errors.js";
 import { type HttpClientOptions, NodeHttpRPC } from "./node-http.client.js";
+import { getRequestData } from "./request.js";
 import { writeError } from "./server.js";
 
 export enum Pattern {
@@ -51,7 +51,7 @@ export class Gateway {
     return (
       req: http.IncomingMessage,
       resp: http.ServerResponse,
-      next: (err?: Error) => void
+      next: (err?: Error) => void,
     ) => {
       this.rewrite(req, resp, prefix)
         .then(() => next())
@@ -76,7 +76,7 @@ export class Gateway {
   async rewrite(
     req: http.IncomingMessage,
     resp: http.ServerResponse,
-    prefix = "/twirp"
+    prefix = "/twirp",
   ) {
     const [match, route] = this.matchRoute(req);
 
@@ -92,14 +92,14 @@ export class Gateway {
 
     if (route.responseBodyKey) {
       const endFn = resp.end.bind(resp);
-      resp.end = function (chunk: any) {
+      resp.end = ((chunk: any) => {
         if (resp.statusCode === 200) {
           endFn(`{ "${route.responseBodyKey}": ${chunk} }`);
         } else {
           endFn(chunk);
         }
         return resp;
-      } as typeof resp.end;
+      }) as typeof resp.end;
     }
   }
 
@@ -120,7 +120,7 @@ export class Gateway {
           `${route.packageName}.${route.serviceName}`,
           route.methodName,
           "application/json",
-          body
+          body,
         );
 
         res.statusCode = 200;
@@ -152,7 +152,7 @@ export class Gateway {
   protected async prepareTwirpBody(
     req: http.IncomingMessage,
     match: MatchResult<ParamData>,
-    route: HttpRoute
+    route: HttpRoute,
   ): Promise<Record<string, any>> {
     // matchers generated for path-to-regexp 6 also capture the query string
     const { query_string: _, ...params } = match.params as Record<string, any>;
@@ -199,7 +199,7 @@ export class Gateway {
       throw new BadRouteError(
         `method not allowed`,
         req.method || "",
-        req.url || ""
+        req.url || "",
       );
     }
 

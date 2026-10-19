@@ -1,7 +1,7 @@
-import { chainInterceptors, type Interceptor } from "../interceptors.js";
+import { describe, expect, it, jest } from "@jest/globals";
 import type { TwirpContext } from "../context.js";
+import { chainInterceptors, type Interceptor } from "../interceptors.js";
 import { TwirpContentType } from "../request.js";
-import { describe, it, expect, jest } from "@jest/globals";
 
 describe("Interceptor", () => {
   it("will chain interceptors", async () => {
@@ -9,7 +9,7 @@ describe("Interceptor", () => {
     const interceptor0: Interceptor<TwirpContext, any, any> = async (
       ctx,
       typedRequest,
-      next
+      next,
     ) => {
       spy();
       const response = await next(ctx, typedRequest);
@@ -21,7 +21,7 @@ describe("Interceptor", () => {
     const interceptor1: Interceptor<TwirpContext, any, any> = async (
       ctx,
       typedRequest,
-      next
+      next,
     ) => {
       spy1();
       return next(ctx, typedRequest);

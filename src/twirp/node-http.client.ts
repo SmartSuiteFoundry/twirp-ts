@@ -1,5 +1,5 @@
-import * as http from "http";
-import * as https from "https";
+import * as http from "node:http";
+import * as https from "node:https";
 import { type Rpc, wrapErrorResponseToTwirpError } from "./http.client.js";
 
 export type HttpClientOptions = Omit<
@@ -71,7 +71,7 @@ export const NodeHttpRPC: (options: HttpClientOptions) => Rpc = (options) => ({
             res.on("error", (err) => {
               rejected(err);
             });
-          }
+          },
         )
         .on("error", (err) => {
           rejected(err);

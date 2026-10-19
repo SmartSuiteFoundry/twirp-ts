@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import {
   InternalServerError,
   InternalServerErrorWith,
@@ -27,7 +27,7 @@ describe("Twirp errors", () => {
           meta1: "value1",
           meta2: "value2",
         },
-      })
+      }),
     );
   });
 });
@@ -40,7 +40,7 @@ describe("Standard Errors", () => {
         code: TwirpErrorCode.NotFound,
         msg: "not found",
         meta: {},
-      })
+      }),
     );
   });
 
@@ -53,7 +53,7 @@ describe("Standard Errors", () => {
         meta: {
           argument: "field",
         },
-      })
+      }),
     );
   });
 
@@ -66,7 +66,7 @@ describe("Standard Errors", () => {
         meta: {
           argument: "field",
         },
-      })
+      }),
     );
   });
 
@@ -77,7 +77,7 @@ describe("Standard Errors", () => {
         code: TwirpErrorCode.Internal,
         msg: "internal",
         meta: {},
-      })
+      }),
     );
   });
 
@@ -91,7 +91,7 @@ describe("Standard Errors", () => {
         meta: {
           cause: "Error",
         },
-      })
+      }),
     );
   });
 
@@ -112,7 +112,7 @@ describe("Standard Errors", () => {
 
     it("keeps the cause off the wire", () => {
       const twirpError = new InternalServerError("outer").withCause(
-        new Error("boom")
+        new Error("boom"),
       );
 
       expect(JSON.parse(twirpError.toJSON())).toEqual({
@@ -135,7 +135,7 @@ describe("Standard Errors", () => {
       const fromAnotherCopy = Object.defineProperty(
         new Error("nope"),
         Symbol.for("twirp-ts.TwirpError"),
-        { value: true }
+        { value: true },
       );
 
       expect(fromAnotherCopy instanceof TwirpError).toBe(false);
@@ -155,7 +155,7 @@ describe("Standard Errors", () => {
     it("rejects anything else", () => {
       expect(TwirpError.isTwirpError(new Error("plain"))).toBe(false);
       expect(TwirpError.isTwirpError({ code: "not_found", msg: "nope" })).toBe(
-        false
+        false,
       );
       expect(TwirpError.isTwirpError("nope")).toBe(false);
       expect(TwirpError.isTwirpError(null)).toBe(false);

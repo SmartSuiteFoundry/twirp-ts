@@ -5,7 +5,7 @@ export interface Rpc {
     service: string,
     method: string,
     contentType: "application/json" | "application/protobuf",
-    data: object | Uint8Array
+    data: object | Uint8Array,
   ): Promise<object | Uint8Array>;
 }
 
@@ -25,7 +25,7 @@ export const FetchRPC: (options: FetchRPCOptions) => Rpc = (options) => ({
     service,
     method,
     contentType,
-    data
+    data,
   ): Promise<object | Uint8Array> {
     const headers = new Headers(options.headers);
     headers.set("content-type", contentType);

@@ -1,21 +1,27 @@
-import { describe, it, expect, beforeEach } from "@jest/globals";
-import http from "http";
-import type { AddressInfo } from "net";
-import type { TwirpServer } from "../server.js";
-import { createHaberdasherServer, type HaberdasherTwirp } from "../__mocks__/service.twirp.js";
-import type { TwirpContext } from "../context.js";
-import { type FindHatRPC, Hat, type ListHatRPC, type Size } from "../__mocks__/service.js";
-import { createGateway } from "../__mocks__/gateway.twirp.js";
-import type { Gateway } from "../gateway.js";
-import supertest from "supertest";
+import http from "node:http";
+import type { AddressInfo } from "node:net";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { createHttpTerminator } from "http-terminator";
-
+import supertest from "supertest";
+import { createGateway } from "../__mocks__/gateway.twirp.js";
+import {
+  type FindHatRPC,
+  Hat,
+  type ListHatRPC,
+  type Size,
+} from "../__mocks__/service.js";
+import {
+  createHaberdasherServer,
+  type HaberdasherTwirp,
+} from "../__mocks__/service.twirp.js";
+import type { TwirpContext } from "../context.js";
+import type { Gateway } from "../gateway.js";
+import type { TwirpServer } from "../server.js";
 
 describe("Gateway", () => {
-
-  let server: http.Server
-  let twirpServer: TwirpServer<HaberdasherTwirp>
-  let gateway: Gateway
+  let server: http.Server;
+  let twirpServer: TwirpServer<HaberdasherTwirp>;
+  let gateway: Gateway;
   beforeEach(() => {
     twirpServer = createHaberdasherServer({
       async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
@@ -31,7 +37,7 @@ describe("Gateway", () => {
       },
       async ListHat(ctx, request): Promise<ListHatRPC> {
         return request;
-      }
+      },
     });
 
     gateway = createGateway();
@@ -46,11 +52,11 @@ describe("Gateway", () => {
 
   it("call custom POST http endpoint that maps to MakeHat", async () => {
     const response = await supertest(server)
-      .post('/hat')
+      .post("/hat")
       .send({
         inches: 30,
       })
-      .expect('Content-Type', "application/json")
+      .expect("Content-Type", "application/json")
       .expect(200);
 
     expect(response.body).toEqual({
@@ -58,32 +64,32 @@ describe("Gateway", () => {
       name: "cap",
       color: "blue",
       inches: 30,
-    })
-  })
+    });
+  });
 
   it("will map url parameter to request message", async () => {
     const response = await supertest(server)
-      .get('/hat/12345')
-      .expect('Content-Type', "application/json")
+      .get("/hat/12345")
+      .expect("Content-Type", "application/json")
       .expect(200);
 
     expect(response.body).toEqual({
       hat_id: "12345",
-    })
-  })
+    });
+  });
 
   it("will map query string parameters to request message", async () => {
     const response = await supertest(server)
-      .get('/hat')
+      .get("/hat")
       .query({
-        'filters[0].order_by': "desc",
-        'filters[0].pagination.limit': 10,
-        'filters[0].pagination.offset': 2,
-        'filters[1].order_by': "asc",
-        'filters[1].pagination.limit': 5,
-        'filters[1].pagination.offset': 6,
+        "filters[0].order_by": "desc",
+        "filters[0].pagination.limit": 10,
+        "filters[0].pagination.offset": 2,
+        "filters[1].order_by": "asc",
+        "filters[1].pagination.limit": 5,
+        "filters[1].pagination.offset": 6,
       })
-      .expect('Content-Type', "application/json")
+      .expect("Content-Type", "application/json")
       .expect(200);
 
     expect(response.body).toEqual({
@@ -101,10 +107,10 @@ describe("Gateway", () => {
             limit: 5,
             offset: 6,
           },
-        }
-      ]
-    })
-  })
+        },
+      ],
+    });
+  });
 
   it("will do a reverse proxy request to the handler", (done) => {
     const server = createHaberdasherServer({
@@ -115,14 +121,14 @@ describe("Gateway", () => {
           color: "blue",
           inches: 100,
           variants: [],
-        })
+        });
       },
       async FindHat(ctx, request): Promise<FindHatRPC> {
         return request;
       },
       async ListHat(ctx, request): Promise<ListHatRPC> {
         return request;
-      }
+      },
     });
 
     const gateway = createGateway();
@@ -136,9 +142,11 @@ describe("Gateway", () => {
     twirpServer.listen(0, async () => {
       const twirpServerPort = (twirpServer.address() as AddressInfo).port;
 
-      const gatewayServer = http.createServer(gateway.reverseProxy({
-        baseUrl: `http://localhost:${twirpServerPort}/twirp`,
-      }));
+      const gatewayServer = http.createServer(
+        gateway.reverseProxy({
+          baseUrl: `http://localhost:${twirpServerPort}/twirp`,
+        }),
+      );
 
       const httpTerminator2 = createHttpTerminator({
         server: gatewayServer,
@@ -147,11 +155,11 @@ describe("Gateway", () => {
       // reverse proxy server
       gatewayServer.listen(0, async () => {
         const response = await supertest(gatewayServer)
-          .post('/hat')
+          .post("/hat")
           .send({
             inches: 30,
           })
-          .expect('Content-Type', "application/json")
+          .expect("Content-Type", "application/json")
           .expect(200);
 
         expect(response.body).toEqual({
@@ -167,7 +175,7 @@ describe("Gateway", () => {
         ]);
 
         done();
-      })
+      });
     });
-  })
-})
+  });
+});

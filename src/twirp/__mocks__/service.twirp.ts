@@ -1,14 +1,14 @@
 import {
-  type TwirpContext,
-  TwirpServer,
+  chainInterceptors,
+  type Interceptor,
   type RouterEvents,
+  TwirpContentType,
+  type TwirpContext,
   TwirpError,
   TwirpErrorCode,
-  type Interceptor,
-  TwirpContentType,
-  chainInterceptors,
+  TwirpServer,
 } from "../index.js";
-import { Size, Hat, FindHatRPC, ListHatRPC } from "./service.js";
+import { FindHatRPC, Hat, ListHatRPC, Size } from "./service.js";
 
 //==================================//
 //          Client Code             //
@@ -19,7 +19,7 @@ interface Rpc {
     service: string,
     method: string,
     contentType: "application/json" | "application/protobuf",
-    data: object | Uint8Array
+    data: object | Uint8Array,
   ): Promise<object | Uint8Array>;
 }
 
@@ -46,10 +46,10 @@ export class HaberdasherClientJSON implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "MakeHat",
       "application/json",
-      data as object
+      data as object,
     );
     return promise.then((data) =>
-      Hat.fromJson(data as any, { ignoreUnknownFields: true })
+      Hat.fromJson(data as any, { ignoreUnknownFields: true }),
     );
   }
 
@@ -62,10 +62,10 @@ export class HaberdasherClientJSON implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "FindHat",
       "application/json",
-      data as object
+      data as object,
     );
     return promise.then((data) =>
-      FindHatRPC.fromJson(data as any, { ignoreUnknownFields: true })
+      FindHatRPC.fromJson(data as any, { ignoreUnknownFields: true }),
     );
   }
 
@@ -78,10 +78,10 @@ export class HaberdasherClientJSON implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "ListHat",
       "application/json",
-      data as object
+      data as object,
     );
     return promise.then((data) =>
-      ListHatRPC.fromJson(data as any, { ignoreUnknownFields: true })
+      ListHatRPC.fromJson(data as any, { ignoreUnknownFields: true }),
     );
   }
 }
@@ -100,7 +100,7 @@ export class HaberdasherClientProtobuf implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "MakeHat",
       "application/protobuf",
-      data
+      data,
     );
     return promise.then((data) => Hat.fromBinary(data as Uint8Array));
   }
@@ -111,7 +111,7 @@ export class HaberdasherClientProtobuf implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "FindHat",
       "application/protobuf",
-      data
+      data,
     );
     return promise.then((data) => FindHatRPC.fromBinary(data as Uint8Array));
   }
@@ -122,7 +122,7 @@ export class HaberdasherClientProtobuf implements HaberdasherClient {
       "twirp.example.haberdasher.Haberdasher",
       "ListHat",
       "application/protobuf",
-      data
+      data,
     );
     return promise.then((data) => ListHatRPC.fromBinary(data as Uint8Array));
   }
@@ -151,7 +151,7 @@ export const HaberdasherMethodList = [
 ];
 
 export function createHaberdasherServer<T extends TwirpContext = TwirpContext>(
-  service: HaberdasherTwirp<T>
+  service: HaberdasherTwirp<T>,
 ) {
   return new TwirpServer<HaberdasherTwirp, T>({
     service,
@@ -164,7 +164,7 @@ export function createHaberdasherServer<T extends TwirpContext = TwirpContext>(
 
 function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
   method: string,
-  events: RouterEvents<T>
+  events: RouterEvents<T>,
 ) {
   switch (method) {
     case "MakeHat":
@@ -172,7 +172,7 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
         ctx: T,
         service: HaberdasherTwirp,
         data: Buffer,
-        interceptors?: Interceptor<T, Size, Hat>[]
+        interceptors?: Interceptor<T, Size, Hat>[],
       ) => {
         ctx.methodName = "MakeHat";
         await events.onMatch(ctx);
@@ -180,7 +180,7 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
           ctx,
           service,
           data,
-          interceptors
+          interceptors,
         );
       };
     case "FindHat":
@@ -188,7 +188,7 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
         ctx: T,
         service: HaberdasherTwirp,
         data: Buffer,
-        interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[]
+        interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[],
       ) => {
         ctx.methodName = "FindHat";
         await events.onMatch(ctx);
@@ -196,7 +196,7 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
           ctx,
           service,
           data,
-          interceptors
+          interceptors,
         );
       };
     case "ListHat":
@@ -204,7 +204,7 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
         ctx: T,
         service: HaberdasherTwirp,
         data: Buffer,
-        interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[]
+        interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[],
       ) => {
         ctx.methodName = "ListHat";
         await events.onMatch(ctx);
@@ -212,13 +212,14 @@ function matchHaberdasherRoute<T extends TwirpContext = TwirpContext>(
           ctx,
           service,
           data,
-          interceptors
+          interceptors,
         );
       };
-    default:
+    default: {
       events.onNotFound();
       const msg = `no handler found`;
       throw new TwirpError(TwirpErrorCode.BadRoute, msg);
+    }
   }
 }
 
@@ -226,7 +227,7 @@ function handleHaberdasherMakeHatRequest<T extends TwirpContext = TwirpContext>(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, Size, Hat>[]
+  interceptors?: Interceptor<T, Size, Hat>[],
 ): Promise<string | Uint8Array> {
   switch (ctx.contentType) {
     case TwirpContentType.JSON:
@@ -236,11 +237,12 @@ function handleHaberdasherMakeHatRequest<T extends TwirpContext = TwirpContext>(
         ctx,
         service,
         data,
-        interceptors
+        interceptors,
       );
-    default:
+    default: {
       const msg = "unexpected Content-Type";
       throw new TwirpError(TwirpErrorCode.BadRoute, msg);
+    }
   }
 }
 
@@ -248,7 +250,7 @@ function handleHaberdasherFindHatRequest<T extends TwirpContext = TwirpContext>(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[]
+  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[],
 ): Promise<string | Uint8Array> {
   switch (ctx.contentType) {
     case TwirpContentType.JSON:
@@ -258,11 +260,12 @@ function handleHaberdasherFindHatRequest<T extends TwirpContext = TwirpContext>(
         ctx,
         service,
         data,
-        interceptors
+        interceptors,
       );
-    default:
+    default: {
       const msg = "unexpected Content-Type";
       throw new TwirpError(TwirpErrorCode.BadRoute, msg);
+    }
   }
 }
 
@@ -270,7 +273,7 @@ function handleHaberdasherListHatRequest<T extends TwirpContext = TwirpContext>(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[]
+  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[],
 ): Promise<string | Uint8Array> {
   switch (ctx.contentType) {
     case TwirpContentType.JSON:
@@ -280,20 +283,21 @@ function handleHaberdasherListHatRequest<T extends TwirpContext = TwirpContext>(
         ctx,
         service,
         data,
-        interceptors
+        interceptors,
       );
-    default:
+    default: {
       const msg = "unexpected Content-Type";
       throw new TwirpError(TwirpErrorCode.BadRoute, msg);
+    }
   }
 }
 async function handleHaberdasherMakeHatJSON<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, Size, Hat>[]
+  interceptors?: Interceptor<T, Size, Hat>[],
 ) {
   let request: Size;
   let response: Hat;
@@ -325,17 +329,17 @@ async function handleHaberdasherMakeHatJSON<
     Hat.toJson(response, {
       useProtoFieldName: true,
       emitDefaultValues: false,
-    }) as string
+    }) as string,
   );
 }
 
 async function handleHaberdasherFindHatJSON<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[]
+  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[],
 ) {
   let request: FindHatRPC;
   let response: FindHatRPC;
@@ -367,17 +371,17 @@ async function handleHaberdasherFindHatJSON<
     FindHatRPC.toJson(response, {
       useProtoFieldName: true,
       emitDefaultValues: false,
-    }) as string
+    }) as string,
   );
 }
 
 async function handleHaberdasherListHatJSON<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[]
+  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[],
 ) {
   let request: ListHatRPC;
   let response: ListHatRPC;
@@ -409,16 +413,16 @@ async function handleHaberdasherListHatJSON<
     ListHatRPC.toJson(response, {
       useProtoFieldName: true,
       emitDefaultValues: false,
-    }) as string
+    }) as string,
   );
 }
 async function handleHaberdasherMakeHatProtobuf<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, Size, Hat>[]
+  interceptors?: Interceptor<T, Size, Hat>[],
 ) {
   let request: Size;
   let response: Hat;
@@ -449,12 +453,12 @@ async function handleHaberdasherMakeHatProtobuf<
 }
 
 async function handleHaberdasherFindHatProtobuf<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[]
+  interceptors?: Interceptor<T, FindHatRPC, FindHatRPC>[],
 ) {
   let request: FindHatRPC;
   let response: FindHatRPC;
@@ -485,12 +489,12 @@ async function handleHaberdasherFindHatProtobuf<
 }
 
 async function handleHaberdasherListHatProtobuf<
-  T extends TwirpContext = TwirpContext
+  T extends TwirpContext = TwirpContext,
 >(
   ctx: T,
   service: HaberdasherTwirp,
   data: Buffer,
-  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[]
+  interceptors?: Interceptor<T, ListHatRPC, ListHatRPC>[],
 ) {
   let request: ListHatRPC;
   let response: ListHatRPC;
