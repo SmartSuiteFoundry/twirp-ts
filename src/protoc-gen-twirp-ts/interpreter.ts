@@ -1,12 +1,12 @@
 import {
   DescriptorProto,
-  DescriptorRegistry,
+  type DescriptorRegistry,
   EnumDescriptorProto,
   FieldDescriptorProto,
   FieldOptions_JSType,
-  FileDescriptorProto,
+  type FileDescriptorProto,
   MethodDescriptorProto,
-  OneofDescriptorProto,
+  type OneofDescriptorProto,
   ServiceDescriptorProto,
 } from "@protobuf-ts/plugin-framework";
 import * as rt from "@protobuf-ts/runtime";

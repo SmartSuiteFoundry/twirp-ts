@@ -1,10 +1,10 @@
 import {
-  TwirpContext,
+  type TwirpContext,
   TwirpServer,
-  RouterEvents,
+  type RouterEvents,
   TwirpError,
   TwirpErrorCode,
-  Interceptor,
+  type Interceptor,
   TwirpContentType,
   chainInterceptors,
 } from "../index.js";

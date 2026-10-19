@@ -1,7 +1,7 @@
 import {
-  AnyTypeDescriptorProto,
+  type AnyTypeDescriptorProto,
   FileDescriptorProto,
-  IDescriptorTree,
+  type IDescriptorTree,
 } from "@protobuf-ts/plugin-framework";
 import { assert } from "@protobuf-ts/runtime";
 

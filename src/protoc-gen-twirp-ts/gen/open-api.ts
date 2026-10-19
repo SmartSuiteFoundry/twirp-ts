@@ -1,21 +1,21 @@
 import {
-  AnyDescriptorProto,
+  type AnyDescriptorProto,
   DescriptorProto,
-  DescriptorRegistry,
+  type DescriptorRegistry,
   EnumDescriptorProto,
-  FieldDescriptorProto,
+  type FieldDescriptorProto,
   FieldDescriptorProto_Label,
   FieldDescriptorProto_Type,
-  FileDescriptorProto,
-  MethodDescriptorProto,
-  ScalarValueType,
-  ServiceDescriptorProto,
-  SymbolTable
+  type FileDescriptorProto,
+  type MethodDescriptorProto,
+  type ScalarValueType,
+  type ServiceDescriptorProto,
+  type SymbolTable
 } from "@protobuf-ts/plugin-framework";
 import * as yaml from 'yaml';
-import { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV3 } from "openapi-types";
 import { createLocalTypeName } from "../local-type-name.js";
-import { getMethod, HttpOption, Pattern } from "./gateway.js";
+import { getMethod, type HttpOption, Pattern } from "./gateway.js";
 
 interface OpenAPIDoc {
   fileName: string,

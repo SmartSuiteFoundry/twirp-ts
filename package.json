@@ -4,12 +4,12 @@
   "description": "TypeScript implementation of the Twirp protocol (SmartSuite fork)",
   "type": "module",
   "bin": {
-    "protoc-gen-twirp_ts": "protoc-gen-twirp_ts.cjs",
+    "protoc-gen-twirp_ts": "protoc-gen-twirp_ts.mjs",
     "twirp-ts-esm-extensions": "esm-extensions.mjs"
   },
   "files": [
     "dist",
-    "protoc-gen-twirp_ts.cjs",
+    "protoc-gen-twirp_ts.mjs",
     "esm-extensions.mjs"
   ],
   "sideEffects": false,
@@ -25,26 +25,17 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=20"
-  },
-  "tshy": {
-    "exclude": [
-      "src/**/__tests__/**",
-      "src/**/__mocks__/**"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/twirp/index.ts",
-      "./server": "./src/twirp/node.ts",
-      "./plugin": "./src/protoc-gen-twirp-ts/plugin.ts",
-      "./esm-extensions": "./src/esm-extensions/index.ts"
-    }
+    "node": ">=24.15.0"
   },
   "scripts": {
-    "build": "tshy",
-    "prepack": "tshy",
-    "format": "prettier -w src/**/*.ts",
-    "lint": "prettier -c src/**/*.ts",
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run clean && npm run build",
+    "clean": "rm -rf dist",
+    "lint": "biome check --write .",
+    "lint:check": "biome check .",
+    "cs": "biome format --write .",
+    "cs:check": "biome format .",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
     "test:coverage": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --coverage"
   },
@@ -59,37 +50,39 @@
   "license": "MIT",
   "dependencies": {
     "@protobuf-ts/plugin-framework": "^2.11.0",
+    "@protobuf-ts/runtime": "^2.11.1",
     "camel-case": "^4.1.2",
     "dot-object": "^2.1.5",
-    "path-to-regexp": "^6.2.0",
-    "ts-poet": "^4.5.0",
+    "path-to-regexp": "^8.4.2",
+    "ts-poet": "^6.12.0",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@jest/globals": "^30.5.2",
     "@protobuf-ts/plugin": "^2.11.1",
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
-    "@semantic-release/github": "^12.0.9",
-    "@semantic-release/npm": "^13.1.5",
-    "@types/dot-object": "^2.1.2",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^22.20.3",
+    "@semantic-release/github": "^12.0.10",
+    "@semantic-release/npm": "^13.2.0",
+    "@swc/core": "^1.16.18",
+    "@swc/jest": "^0.2.39",
+    "@types/dot-object": "^2.1.6",
+    "@types/node": "^24.19.2",
     "@types/supertest": "^7.2.1",
     "conventional-changelog-conventionalcommits": "^9.3.1",
     "http-terminator": "^3.2.0",
-    "jest": "^30.5.1",
+    "jest": "^30.5.2",
+    "jest-mock": "^30.5.2",
     "openapi-types": "^12.1.3",
-    "prettier": "^2.3.2",
     "semantic-release": "^25.0.9",
-    "supertest": "^7.2.2",
-    "ts-jest": "^29.4.12",
-    "ts-proto": "^1.81.3",
-    "tshy": "^3.1.0",
-    "typescript": "^5.9.3"
+    "supertest": "^7.3.1",
+    "ts-proto": "^2.18.0",
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
     "@protobuf-ts/plugin": "^2.5.0",
-    "ts-proto": "^1.81.3"
+    "ts-proto": "^1.81.3 || ^2.0.0"
   },
   "peerDependenciesMeta": {
     "@protobuf-ts/plugin": {
@@ -102,47 +95,22 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "import": {
-        "types": "./dist/esm/twirp/index.d.ts",
-        "default": "./dist/esm/twirp/index.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/twirp/index.d.ts",
-        "default": "./dist/commonjs/twirp/index.js"
-      }
+      "types": "./dist/twirp/index.d.ts",
+      "default": "./dist/twirp/index.js"
     },
     "./server": {
-      "import": {
-        "types": "./dist/esm/twirp/node.d.ts",
-        "default": "./dist/esm/twirp/node.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/twirp/node.d.ts",
-        "default": "./dist/commonjs/twirp/node.js"
-      }
+      "types": "./dist/twirp/node.d.ts",
+      "default": "./dist/twirp/node.js"
     },
     "./plugin": {
-      "import": {
-        "types": "./dist/esm/protoc-gen-twirp-ts/plugin.d.ts",
-        "default": "./dist/esm/protoc-gen-twirp-ts/plugin.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/protoc-gen-twirp-ts/plugin.d.ts",
-        "default": "./dist/commonjs/protoc-gen-twirp-ts/plugin.js"
-      }
+      "types": "./dist/protoc-gen-twirp-ts/plugin.d.ts",
+      "default": "./dist/protoc-gen-twirp-ts/plugin.js"
     },
     "./esm-extensions": {
-      "import": {
-        "types": "./dist/esm/esm-extensions/index.d.ts",
-        "default": "./dist/esm/esm-extensions/index.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/esm-extensions/index.d.ts",
-        "default": "./dist/commonjs/esm-extensions/index.js"
-      }
+      "types": "./dist/esm-extensions/index.d.ts",
+      "default": "./dist/esm-extensions/index.js"
     }
   },
-  "main": "./dist/commonjs/twirp/index.js",
-  "types": "./dist/commonjs/twirp/index.d.ts",
-  "module": "./dist/esm/twirp/index.js"
+  "main": "./dist/twirp/index.js",
+  "types": "./dist/twirp/index.d.ts"
 }

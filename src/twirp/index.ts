@@ -4,4 +4,4 @@ export * from "./interceptors.js";
 export * from "./hooks.js";
 export * from "./errors.js";
 export * from "./http.client.js";
-export { TwirpContentType, TwirpRequest } from "./request.js";
+export { TwirpContentType, type TwirpRequest } from "./request.js";

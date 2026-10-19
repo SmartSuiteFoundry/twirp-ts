@@ -1,6 +1,6 @@
 import * as http from "http";
 import * as https from "https";
-import { Rpc, wrapErrorResponseToTwirpError } from "./http.client.js";
+import { type Rpc, wrapErrorResponseToTwirpError } from "./http.client.js";
 
 export type HttpClientOptions = Omit<
   http.RequestOptions | https.RequestOptions,

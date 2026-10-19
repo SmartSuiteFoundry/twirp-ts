@@ -1,7 +1,7 @@
-import { chainInterceptors, Interceptor } from "../interceptors.js";
-import { TwirpContext } from "../context.js";
+import { chainInterceptors, type Interceptor } from "../interceptors.js";
+import type { TwirpContext } from "../context.js";
 import { TwirpContentType } from "../request.js";
-import { jest } from "@jest/globals";
+import { describe, it, expect, jest } from "@jest/globals";
 
 describe("Interceptor", () => {
   it("will chain interceptors", async () => {

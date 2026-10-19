@@ -1,11 +1,12 @@
+import { describe, it, expect, beforeEach } from "@jest/globals";
 import http from "http";
-import { AddressInfo } from "net";
-import { TwirpServer } from "../server.js";
-import { createHaberdasherServer, HaberdasherTwirp } from "../__mocks__/service.twirp.js";
-import { TwirpContext } from "../context.js";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import type { AddressInfo } from "net";
+import type { TwirpServer } from "../server.js";
+import { createHaberdasherServer, type HaberdasherTwirp } from "../__mocks__/service.twirp.js";
+import type { TwirpContext } from "../context.js";
+import { type FindHatRPC, Hat, type ListHatRPC, type Size } from "../__mocks__/service.js";
 import { createGateway } from "../__mocks__/gateway.twirp.js";
-import { Gateway } from "../gateway.js";
+import type { Gateway } from "../gateway.js";
 import supertest from "supertest";
 import { createHttpTerminator } from "http-terminator";
 

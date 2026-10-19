@@ -20,18 +20,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # semantic-release works out the last release from the tags.
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .nvmrc
           cache: npm
       # Trusted publishing needs npm 11.5.1+, newer than the bundled npm.
       - run: npm install -g npm@latest
       - run: npm ci
-      - run: npm run lint
+      - run: npm run lint:check
+      - run: npm run typecheck
       - run: npm run build
       - run: npm run test
       - run: npx semantic-release

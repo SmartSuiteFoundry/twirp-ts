@@ -1,4 +1,4 @@
-import { jest } from "@jest/globals";
+import { test, expect, jest } from "@jest/globals";
 
 // Browser bundles polyfill `url` without a `URL` export, so the client must use the global.
 jest.unstable_mockModule("url", () => ({}));

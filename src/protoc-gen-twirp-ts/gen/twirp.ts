@@ -1,4 +1,4 @@
-import {DescriptorRegistry, FileDescriptorProto, ServiceDescriptorProto, SymbolTable} from "@protobuf-ts/plugin-framework";
+import type {DescriptorRegistry, FileDescriptorProto, ServiceDescriptorProto, SymbolTable} from "@protobuf-ts/plugin-framework";
 import {code, imp, joinCode} from "ts-poet";
 import { camelCase } from "camel-case";
 import { createLocalTypeName } from "../local-type-name.js";
@@ -27,7 +27,7 @@ export async function generateTwirp(ctx: any, file: FileDescriptorProto) {
       ], { on: "\n\n" })
     });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+    return joinCode(contents, { on: "\n\n"}).toString();
 }
 
 /**
@@ -40,7 +40,7 @@ export async function generateTwirpClient(ctx: any, file: FileDescriptorProto) {
         return joinCode([genClient(ctx, file, service)], { on: "\n\n" })
     });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+    return joinCode(contents, { on: "\n\n"}).toString();
 }
 
 /**
@@ -53,7 +53,7 @@ export async function generateTwirpServer(ctx: any, file: FileDescriptorProto) {
         return joinCode([genServer(ctx, file, service)], { on: "\n\n" })
     });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+    return joinCode(contents, { on: "\n\n"}).toString();
 }
 
 function genClient(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {

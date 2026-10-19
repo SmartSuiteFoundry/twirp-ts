@@ -1,7 +1,7 @@
-import * as http from "http";
-import { TwirpContext } from "./context.js";
-import { chainHooks, isHook, ServerHooks } from "./hooks.js";
-import { Interceptor } from "./interceptors.js";
+import type * as http from "http";
+import type { TwirpContext } from "./context.js";
+import { chainHooks, isHook, type ServerHooks } from "./hooks.js";
+import type { Interceptor } from "./interceptors.js";
 import { getContentType, getRequestData, validateRequest } from "./request.js";
 import {
   BadRouteError,

@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-import "./dist/esm/esm-extensions/cli.js";
+import "./dist/esm-extensions/cli.js";

@@ -1,5 +1,5 @@
-import * as http from "http";
-import { TwirpContentType } from "./request.js";
+import type * as http from "http";
+import type { TwirpContentType } from "./request.js";
 
 export interface TwirpContext<
   Request = http.IncomingMessage,

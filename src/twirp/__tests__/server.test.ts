@@ -2,13 +2,13 @@ import * as http from "http";
 import supertest from "supertest";
 import {
   createHaberdasherServer,
-  HaberdasherTwirp,
+  type HaberdasherTwirp,
 } from "../__mocks__/service.twirp.js";
-import { TwirpContext } from "../context.js";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import type { TwirpContext } from "../context.js";
+import { type FindHatRPC, Hat, type ListHatRPC, type Size } from "../__mocks__/service.js";
 import { TwirpError, TwirpErrorCode } from "../errors.js";
-import { TwirpServer } from "../server.js";
-import { jest } from "@jest/globals";
+import type { TwirpServer } from "../server.js";
+import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 
 describe("Server twirp specification", () => {
   let server: http.Server;

@@ -1,13 +1,14 @@
+import { describe, it, expect, beforeEach } from "@jest/globals";
 import * as http from "http";
-import { AddressInfo } from "net";
-import {createHttpTerminator, HttpTerminator} from "http-terminator";
+import type { AddressInfo } from "net";
+import {createHttpTerminator, type HttpTerminator} from "http-terminator";
 import {
     createHaberdasherServer,
     HaberdasherClientJSON,
     HaberdasherClientProtobuf
 } from "../__mocks__/service.twirp.js";
-import {TwirpContext} from "../context.js";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import type {TwirpContext} from "../context.js";
+import { type FindHatRPC, Hat, type ListHatRPC, type Size } from "../__mocks__/service.js";
 import {NodeHttpRPC} from "../node-http.client.js";
 import {InternalServerError, TwirpError, TwirpErrorCode} from "../errors.js";
 

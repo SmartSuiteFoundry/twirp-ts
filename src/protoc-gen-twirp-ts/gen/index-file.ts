@@ -1,4 +1,4 @@
-import { DescriptorRegistry } from "@protobuf-ts/plugin-framework";
+import type { DescriptorRegistry } from "@protobuf-ts/plugin-framework";
 import { File } from "../file.js";
 
 export function genIndexFile(registry: DescriptorRegistry, files: File[]) {

@@ -1,5 +1,5 @@
-import { TwirpContext } from "./context.js";
-import { TwirpError } from "./errors.js";
+import type { TwirpContext } from "./context.js";
+import type { TwirpError } from "./errors.js";
 
 // ServerHooks is a container for callbacks that can instrument a
 // Twirp-generated server. These callbacks all accept a context and return a

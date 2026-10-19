@@ -1,13 +1,10 @@
-import { FileDescriptorProto } from "@protobuf-ts/plugin-framework";
-import {writeFileSync} from  "fs"
+import type { FileDescriptorProto } from "@protobuf-ts/plugin-framework";
 import { code, imp, joinCode } from "ts-poet";
-import { match, MatchFunction } from "path-to-regexp";
+import { match, type MatchFunction, type ParamData } from "path-to-regexp";
 
 const Gateway = imp("Gateway@@smartsuite-foundry/twirp-ts/server");
 const GatewayPattern = imp("Pattern@@smartsuite-foundry/twirp-ts/server");
 const pathToRegexpMatch = imp("match@path-to-regexp");
-
-const debug = (content: any) => writeFileSync(__dirname + "/debug.json", JSON.stringify(content, null, 2),"utf-8")
 
 export enum Pattern {
   POST = 'post',
@@ -22,7 +19,7 @@ export interface HttpRoute {
   methodName: string
   packageName: string
   matchingPath: string
-  matcher: MatchFunction
+  matcher: MatchFunction<ParamData>
   httpMethod: Pattern
   bodyKey?: string
   responseBodyKey?: string
@@ -70,7 +67,7 @@ export async function genGateway(ctx: any, files: readonly FileDescriptorProto[]
     return all
   }, [] as HttpRoute[]);
 
-  return genGatewayHandler(httpRoutes).toStringWithImports();
+  return genGatewayHandler(httpRoutes).toString();
 }
 
 function genGatewayHandler(httpRoute: HttpRoute[]) {
@@ -82,8 +79,8 @@ function genGatewayHandler(httpRoute: HttpRoute[]) {
         methodName: "${route.methodName}",
         serviceName: "${route.serviceName}",
         httpMethod: "${route.httpMethod}" as ${GatewayPattern},
-        matchingPath: "${route.matchingPath}{:query_string(\\\\?.*)}?",
-        matcher: ${pathToRegexpMatch}("${route.matchingPath}{:query_string(\\\\?.*)}?"),
+        matchingPath: "${route.matchingPath}",
+        matcher: ${pathToRegexpMatch}("${route.matchingPath}"),
         bodyKey: "${route.bodyKey || ""}",
         responseBodyKey: "${route.responseBodyKey || ""}",
       },
@@ -128,7 +125,7 @@ function matcher(url: string) {
 
     if (matchURLParams && matchURLParams.length > 0) {
       const paramName = matchURLParams[1] as string;
-      return "{:" + paramName + "}";
+      return ":" + paramName;
     } else {
       return urlSegment
     }
