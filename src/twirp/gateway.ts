@@ -1,6 +1,6 @@
 import type * as http from "http";
 import { parse } from "querystring";
-import * as dotObject from "dot-object";
+import dotObject from "dot-object";
 import type { MatchFunction, MatchResult, ParamData } from "path-to-regexp";
 import { getRequestData } from "./request.js";
 import {
