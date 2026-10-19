@@ -1,4 +1,4 @@
-import { Gateway, Pattern } from "../index.js";
+import { Gateway, Pattern } from "../node.js";
 import { match } from "path-to-regexp";
 
 export function createGateway() {

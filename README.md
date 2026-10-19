@@ -369,11 +369,13 @@ You can choose between `JSON` client and `Protobuf` client.
 
 The generated code doesn't include an actual library to make `http` requests, but it gives you an interface to implement the one that you like the most.
 
-Alternatively you can use the provided implementation based on node `http` and `https` package.
+Alternatively you can use the provided implementation based on node `http` and `https` package. It is exported from `@smartsuite-foundry/twirp-ts/server`, together with the gateway, so that browser bundles of the main entry never reach node built-ins.
 
 For example:
 
 ```ts
+import { NodeHttpRPC } from "@smartsuite-foundry/twirp-ts/server";
+
 const jsonClient = new HaberdasherClientJSON(NodeHttpRPC({
     baseUrl: "http://localhost:8000/twirp",
 }));
