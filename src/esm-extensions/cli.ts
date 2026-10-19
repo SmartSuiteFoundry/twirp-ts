@@ -7,12 +7,12 @@ const main = async (): Promise<void> => {
   const { changed, unresolved } = await applyEsmExtensions(root);
 
   console.log(
-    `esm-extensions: rewrote ${changed.length} file(s) under ${root}`
+    `esm-extensions: rewrote ${changed.length} file(s) under ${root}`,
   );
 
   if (unresolved.length > 0) {
     console.error(
-      `esm-extensions: could not resolve:\n  ${unresolved.join("\n  ")}`
+      `esm-extensions: could not resolve:\n  ${unresolved.join("\n  ")}`,
     );
     process.exit(1);
   }

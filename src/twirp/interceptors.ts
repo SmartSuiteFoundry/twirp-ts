@@ -1,4 +1,4 @@
-import { TwirpContext } from "./context.js";
+import type { TwirpContext } from "./context.js";
 
 // Interceptor is a form of middleware for Twirp requests, that can be installed on both
 // clients and servers. To intercept RPC calls in the client, use the option
@@ -11,12 +11,12 @@ import { TwirpContext } from "./context.js";
 export type Next<
   Context extends TwirpContext = TwirpContext,
   Request = any,
-  Response = any
+  Response = any,
 > = (ctx: Context, typedRequest: Request) => Promise<Response>;
 export type Interceptor<Context extends TwirpContext, Request, Response> = (
   ctx: Context,
   typedRequest: Request,
-  next: Next<Context, Request, Response>
+  next: Next<Context, Request, Response>,
 ) => Promise<Response>;
 
 // chains multiple Interceptors into a single Interceptor.
@@ -25,7 +25,7 @@ export type Interceptor<Context extends TwirpContext, Request, Response> = (
 export function chainInterceptors<
   Context extends TwirpContext,
   Request,
-  Response
+  Response,
 >(
   ...interceptors: Interceptor<Context, Request, Response>[]
 ): Interceptor<Context, Request, Response> | undefined {

@@ -1,21 +1,21 @@
 import {
-  CodeGeneratorRequest,
+  type CodeGeneratorRequest,
   CodeGeneratorResponse_Feature,
   DescriptorRegistry,
   PluginBase,
   SymbolTable,
 } from "@protobuf-ts/plugin-framework";
 import { File } from "./file.js";
+import { genGateway } from "./gen/gateway.js";
+import { genIndexFile } from "./gen/index-file.js";
+import { genOpenAPI, OpenAPIType } from "./gen/open-api.js";
 import {
   generateTwirp,
   generateTwirpClient,
   generateTwirpServer,
 } from "./gen/twirp.js";
-import { genGateway } from "./gen/gateway.js";
-import { createLocalTypeName } from "./local-type-name.js";
 import { Interpreter } from "./interpreter.js";
-import { genOpenAPI, OpenAPIType } from "./gen/open-api.js";
-import { genIndexFile } from "./gen/index-file.js";
+import { createLocalTypeName } from "./local-type-name.js";
 
 export class ProtobuftsPlugin extends PluginBase<File> {
   parameters = {
@@ -68,9 +68,9 @@ export class ProtobuftsPlugin extends PluginBase<File> {
 
     const files = [];
 
-    for (let fileDescriptor of registry.allFiles()) {
+    for (const fileDescriptor of registry.allFiles()) {
       const messageFileOut = new File(
-        `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}`
+        `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}`,
       );
 
       registry.visitTypes(fileDescriptor, (descriptor) => {
@@ -79,7 +79,7 @@ export class ProtobuftsPlugin extends PluginBase<File> {
         ctx.symbols.register(
           createLocalTypeName(descriptor, registry),
           descriptor,
-          messageFileOut
+          messageFileOut,
         );
       });
 
@@ -87,7 +87,7 @@ export class ProtobuftsPlugin extends PluginBase<File> {
       // options are passed.
       if (!params.standalone && !params.client_only && !params.server_only) {
         const twirpFileOut = new File(
-          `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}.twirp.ts`
+          `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}.twirp.ts`,
         );
         const twirpFileContent = await generateTwirp(ctx, fileDescriptor);
         twirpFileOut.setContent(twirpFileContent);
@@ -96,13 +96,13 @@ export class ProtobuftsPlugin extends PluginBase<File> {
 
       if (params.server_only && params.client_only) {
         throw new Error(
-          "Only one of server_only or client_only can be passed."
+          "Only one of server_only or client_only can be passed.",
         );
       }
 
       if (params.server_only || params.standalone) {
         const serverFileOut = new File(
-          `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}.twirp.ts`
+          `${fileDescriptor.name?.replace(".proto", "").toLowerCase()}.twirp.ts`,
         );
         const serverContent = await generateTwirpServer(ctx, fileDescriptor);
         serverFileOut.setContent(serverContent);
@@ -113,7 +113,7 @@ export class ProtobuftsPlugin extends PluginBase<File> {
         const clientFileOut = new File(
           `${fileDescriptor.name
             ?.replace(".proto", "")
-            .toLowerCase()}.twirp-client.ts`
+            .toLowerCase()}.twirp-client.ts`,
         );
         const clientContent = await generateTwirpClient(ctx, fileDescriptor);
         clientFileOut.setContent(clientContent);
@@ -138,13 +138,13 @@ export class ProtobuftsPlugin extends PluginBase<File> {
     const docs = [];
     if (params.openapi_twirp) {
       docs.push(
-        ...(await genOpenAPI(ctx, registry.allFiles(), OpenAPIType.TWIRP))
+        ...(await genOpenAPI(ctx, registry.allFiles(), OpenAPIType.TWIRP)),
       );
     }
 
     if (params.openapi_gateway) {
       docs.push(
-        ...(await genOpenAPI(ctx, registry.allFiles(), OpenAPIType.GATEWAY))
+        ...(await genOpenAPI(ctx, registry.allFiles(), OpenAPIType.GATEWAY)),
       );
     }
 

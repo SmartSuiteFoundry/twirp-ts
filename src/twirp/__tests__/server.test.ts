@@ -1,14 +1,26 @@
-import * as http from "http";
+import * as http from "node:http";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import supertest from "supertest";
 import {
+  type FindHatRPC,
+  Hat,
+  type ListHatRPC,
+  type Size,
+} from "../__mocks__/service.js";
+import {
   createHaberdasherServer,
-  HaberdasherTwirp,
+  type HaberdasherTwirp,
 } from "../__mocks__/service.twirp.js";
-import { TwirpContext } from "../context.js";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
+import type { TwirpContext } from "../context.js";
 import { TwirpError, TwirpErrorCode } from "../errors.js";
-import { TwirpServer } from "../server.js";
-import { jest } from "@jest/globals";
+import type { TwirpServer } from "../server.js";
 
 describe("Server twirp specification", () => {
   let server: http.Server;
@@ -41,7 +53,7 @@ describe("Server twirp specification", () => {
           return;
         }
         server.close((err) => (err ? reject(err) : resolve()));
-      })
+      }),
   );
 
   it("support only POST requests", async () => {
@@ -135,7 +147,7 @@ describe("Server twirp specification", () => {
     it("must respect the prefix", async () => {
       const resp = await supertest(server)
         .post(
-          "/twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat"
+          "/twirp-not-existing/twirp.example.haberdasher.Haberdasher/MakeHat",
         )
         .set("Content-Type", "application/json")
         .expect("Content-Type", "application/json")
@@ -154,7 +166,7 @@ describe("Server twirp specification", () => {
     it("must have a specified handler", async () => {
       const resp = await supertest(server)
         .post(
-          "/twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists"
+          "/twirp/twirp.example.haberdasher.Haberdasher/MakeHatDoesntExists",
         )
         .set("Content-Type", "application/json")
         .expect("Content-Type", "application/json")
@@ -175,7 +187,7 @@ describe("Server twirp specification", () => {
         (req as any).rawBody = Buffer.from(
           JSON.stringify({
             hatId: "1234",
-          })
+          }),
         );
         await twirpServer.httpHandler()(req, res);
       });

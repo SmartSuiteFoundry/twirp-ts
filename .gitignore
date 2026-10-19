@@ -6,6 +6,4 @@ debug.json
 .idea/
 build/
 dist/
-.tshy/
-.tshy-build/
 coverage/

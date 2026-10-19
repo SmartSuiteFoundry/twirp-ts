@@ -342,5 +342,5 @@ export function httpStatusFromErrorCode(code: TwirpErrorCode): number {
 
 // IsValidErrorCode returns true if is one of the valid predefined constants.
 export function isValidErrorCode(code: TwirpErrorCode): boolean {
-  return httpStatusFromErrorCode(code) != 0;
+  return httpStatusFromErrorCode(code) !== 0;
 }

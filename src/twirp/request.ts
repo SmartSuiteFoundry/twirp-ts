@@ -1,5 +1,5 @@
-import { TwirpContext } from "./context.js";
-import http from "http";
+import type http from "node:http";
+import type { TwirpContext } from "./context.js";
 import { BadRouteError, TwirpError, TwirpErrorCode } from "./errors.js";
 
 /**
@@ -46,7 +46,7 @@ export function getContentType(mimeType: string | undefined): TwirpContentType {
 export function validateRequest(
   ctx: TwirpContext,
   request: http.IncomingMessage,
-  pathPrefix: string
+  pathPrefix: string,
 ): TwirpRequest {
   if (request.method !== "POST") {
     const msg = `unsupported method ${request.method} (only POST is allowed)`;
@@ -103,12 +103,12 @@ export function getRequestData(req: http.IncomingMessage): Promise<Buffer> {
         reject(
           new TwirpError(
             TwirpErrorCode.DeadlineExceeded,
-            "failed to read request: deadline exceeded"
-          )
+            "failed to read request: deadline exceeded",
+          ),
         );
       } else {
         reject(
-          new TwirpError(TwirpErrorCode.Malformed, err.message).withCause(err)
+          new TwirpError(TwirpErrorCode.Malformed, err.message).withCause(err),
         );
       }
     });
@@ -117,8 +117,8 @@ export function getRequestData(req: http.IncomingMessage): Promise<Buffer> {
       reject(
         new TwirpError(
           TwirpErrorCode.Canceled,
-          "failed to read request: context canceled"
-        )
+          "failed to read request: context canceled",
+        ),
       );
     });
   });
@@ -129,7 +129,7 @@ export function getRequestData(req: http.IncomingMessage): Promise<Buffer> {
  * @param path
  */
 export function parseTwirpPath(
-  path: string
+  path: string,
 ): Omit<TwirpRequest, "contentType" | "mimeContentType"> {
   const parts = path.split("/");
 

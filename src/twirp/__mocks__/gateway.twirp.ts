@@ -1,5 +1,5 @@
-import { Gateway, Pattern } from "../node.js";
 import { match } from "path-to-regexp";
+import { Gateway, type Pattern } from "../node.js";
 
 export function createGateway() {
   return new Gateway({
@@ -9,8 +9,8 @@ export function createGateway() {
         methodName: "MakeHat",
         serviceName: "Haberdasher",
         httpMethod: "post" as Pattern,
-        matchingPath: "/hat{:query_string(\\?.*)}?",
-        matcher: match("/hat{:query_string(\\?.*)}?"),
+        matchingPath: "/hat",
+        matcher: match("/hat"),
         bodyKey: "*",
         responseBodyKey: "",
       },
@@ -21,8 +21,8 @@ export function createGateway() {
         methodName: "FindHat",
         serviceName: "Haberdasher",
         httpMethod: "get" as Pattern,
-        matchingPath: "/hat/{:hat_id}{:query_string(\\?.*)}?",
-        matcher: match("/hat/{:hat_id}{:query_string(\\?.*)}?"),
+        matchingPath: "/hat/:hat_id",
+        matcher: match("/hat/:hat_id"),
         bodyKey: "",
         responseBodyKey: "",
       },
@@ -31,8 +31,8 @@ export function createGateway() {
         methodName: "ListHat",
         serviceName: "Haberdasher",
         httpMethod: "get" as Pattern,
-        matchingPath: "/hat{:query_string(\\?.*)}?",
-        matcher: match("/hat{:query_string(\\?.*)}?"),
+        matchingPath: "/hat",
+        matcher: match("/hat"),
         bodyKey: "",
         responseBodyKey: "",
       },

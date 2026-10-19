@@ -1,6 +1,6 @@
-import * as http from "http";
-import * as https from "https";
-import { Rpc, wrapErrorResponseToTwirpError } from "./http.client.js";
+import * as http from "node:http";
+import * as https from "node:https";
+import { type Rpc, wrapErrorResponseToTwirpError } from "./http.client.js";
 
 export type HttpClientOptions = Omit<
   http.RequestOptions | https.RequestOptions,
@@ -58,7 +58,7 @@ export const NodeHttpRPC: (options: HttpClientOptions) => Rpc = (options) => ({
             res.on("data", (chunk) => responseChunks.push(chunk));
             res.on("end", () => {
               const data = Buffer.concat(responseChunks);
-              if (res.statusCode != 200) {
+              if (res.statusCode !== 200) {
                 rejected(wrapErrorResponseToTwirpError(data.toString()));
               } else {
                 if (contentType === "application/json") {
@@ -71,7 +71,7 @@ export const NodeHttpRPC: (options: HttpClientOptions) => Rpc = (options) => ({
             res.on("error", (err) => {
               rejected(err);
             });
-          }
+          },
         )
         .on("error", (err) => {
           rejected(err);

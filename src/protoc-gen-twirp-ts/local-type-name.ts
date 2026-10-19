@@ -1,17 +1,17 @@
 import {
-  AnyTypeDescriptorProto,
+  type AnyTypeDescriptorProto,
   FileDescriptorProto,
-  IDescriptorTree,
+  type IDescriptorTree,
 } from "@protobuf-ts/plugin-framework";
 import { assert } from "@protobuf-ts/runtime";
 
 const reservedKeywords =
   "break,case,catch,class,const,continue,debugger,default,delete,do,else,enum,export,extends,false,finally,for,function,if,import,in,instanceof,new,null,return,super,switch,this,throw,true,try,typeof,var,void,while,with,as,implements,interface,let,package,private,protected,public,static,yield,any,boolean,constructor,declare,get,module,require,number,set,string,symbol,type,from,of".split(
-    ","
+    ",",
   );
 const reservedTypeNames =
   "Long,Uint8Array,array,Array,string,String,number,Number,boolean,Boolean,bigint,BigInt".split(
-    ","
+    ",",
   );
 const escapeCharacter = "$";
 
@@ -27,7 +27,7 @@ const escapeCharacter = "$";
  */
 export function createLocalTypeName(
   descriptor: AnyTypeDescriptorProto,
-  treeLookup: IDescriptorTree
+  treeLookup: IDescriptorTree,
 ): string {
   // build name components for parent types
   const components = [];

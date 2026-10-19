@@ -1,8 +1,13 @@
-import {DescriptorRegistry, FileDescriptorProto, ServiceDescriptorProto, SymbolTable} from "@protobuf-ts/plugin-framework";
-import {code, imp, joinCode} from "ts-poet";
+import path from "node:path";
+import type {
+  DescriptorRegistry,
+  FileDescriptorProto,
+  ServiceDescriptorProto,
+  SymbolTable,
+} from "@protobuf-ts/plugin-framework";
 import { camelCase } from "camel-case";
+import { code, imp, joinCode } from "ts-poet";
 import { createLocalTypeName } from "../local-type-name.js";
-import path from "path";
 
 const TwirpServer = imp("TwirpServer@@smartsuite-foundry/twirp-ts");
 const Interceptor = imp("Interceptor@@smartsuite-foundry/twirp-ts");
@@ -20,14 +25,14 @@ const TwirpErrorCode = imp("TwirpErrorCode@@smartsuite-foundry/twirp-ts");
  * @param file
  */
 export async function generateTwirp(ctx: any, file: FileDescriptorProto) {
-    const contents = file.service.map((service) => {
-      return joinCode([
-        genClient(ctx, file, service),
-        genServer(ctx, file, service),
-      ], { on: "\n\n" })
-    });
+  const contents = file.service.map((service) => {
+    return joinCode(
+      [genClient(ctx, file, service), genServer(ctx, file, service)],
+      { on: "\n\n" },
+    );
+  });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+  return joinCode(contents, { on: "\n\n" }).toString();
 }
 
 /**
@@ -36,11 +41,11 @@ export async function generateTwirp(ctx: any, file: FileDescriptorProto) {
  * @param file
  */
 export async function generateTwirpClient(ctx: any, file: FileDescriptorProto) {
-    const contents = file.service.map((service) => {
-        return joinCode([genClient(ctx, file, service)], { on: "\n\n" })
-    });
+  const contents = file.service.map((service) => {
+    return joinCode([genClient(ctx, file, service)], { on: "\n\n" });
+  });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+  return joinCode(contents, { on: "\n\n" }).toString();
 }
 
 /**
@@ -49,15 +54,19 @@ export async function generateTwirpClient(ctx: any, file: FileDescriptorProto) {
  * @param file
  */
 export async function generateTwirpServer(ctx: any, file: FileDescriptorProto) {
-    const contents = file.service.map((service) => {
-        return joinCode([genServer(ctx, file, service)], { on: "\n\n" })
-    });
+  const contents = file.service.map((service) => {
+    return joinCode([genServer(ctx, file, service)], { on: "\n\n" });
+  });
 
-    return joinCode(contents, { on: "\n\n"}).toStringWithImports();
+  return joinCode(contents, { on: "\n\n" }).toString();
 }
 
-function genClient(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    return code`
+function genClient(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  return code`
         //==================================//
         //          Client Code             //
         //==================================//
@@ -75,21 +84,25 @@ function genClient(ctx: any, file: FileDescriptorProto, service: ServiceDescript
 
         ${genTwripClientJSONImpl(ctx, file, service)}
         ${genTwripClientProtobufImpl(ctx, file, service)}
-    `
+    `;
 }
 
-function genTwirpClientInterface(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const methods = service.method.map((method) => {
-        return code`
-            ${formatMethodName(ctx, method.name!)}(request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}>
-        `
-    });
-
+function genTwirpClientInterface(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const methods = service.method.map((method) => {
     return code`
+            ${formatMethodName(ctx, method.name!)}(request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}>
+        `;
+  });
+
+  return code`
         export interface ${service.name}Client {
-            ${joinCode(methods, { on: "\n"})}
+            ${joinCode(methods, { on: "\n" })}
         }
-    `
+    `;
 }
 
 /**
@@ -98,38 +111,42 @@ function genTwirpClientInterface(ctx: any, file: FileDescriptorProto, service: S
  * @param file
  * @param service
  */
-function genTwripClientJSONImpl(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const methods = service.method.map((method) => {
-        return code`
+function genTwripClientJSONImpl(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const methods = service.method.map((method) => {
+    return code`
             ${formatMethodName(ctx, method.name!)}(request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}> {
-                const data = ${relativeMessageName(ctx, file, method.inputType)}.${encodeJSON(ctx,"request")};
+                const data = ${relativeMessageName(ctx, file, method.inputType)}.${encodeJSON(ctx, "request")};
                 const promise = this.rpc.request(
                   "${file.package ? file.package + "." : ""}${service.name}",
                   "${formatMethodName(ctx, method.name!)}",
                   "application/json",
                   data as object,
                 );
-                return promise.then((data) => ${relativeMessageName(ctx, file, method.outputType)}.${decodeJSON(ctx,"data as any")});
+                return promise.then((data) => ${relativeMessageName(ctx, file, method.outputType)}.${decodeJSON(ctx, "data as any")});
             }
-        `
-    });
+        `;
+  });
 
-    const bindings = service.method.map((method) => {
-        return code`
-            this.${formatMethodName(ctx, method.name!)}.bind(this);
-        `
-    })
-
+  const bindings = service.method.map((method) => {
     return code`
+            this.${formatMethodName(ctx, method.name!)}.bind(this);
+        `;
+  });
+
+  return code`
         export class ${service.name}ClientJSON implements ${service.name}Client {
           private readonly rpc: Rpc;
           constructor(rpc: Rpc) {
             this.rpc = rpc;
-            ${joinCode(bindings, {on: `\n`})}
+            ${joinCode(bindings, { on: `\n` })}
           }
-          ${joinCode(methods, {on: `\n\n`})}
+          ${joinCode(methods, { on: `\n\n` })}
         }
-    `
+    `;
 }
 
 /**
@@ -138,9 +155,13 @@ function genTwripClientJSONImpl(ctx: any, file: FileDescriptorProto, service: Se
  * @param file
  * @param service
  */
-function genTwripClientProtobufImpl(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const methods = service.method.map((method) => {
-        return code`
+function genTwripClientProtobufImpl(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const methods = service.method.map((method) => {
+    return code`
             ${formatMethodName(ctx, method.name!)}(request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}> {
                 const data = ${relativeMessageName(ctx, file, method.inputType)}.${encodeProtobuf(ctx, "request")};
                 const promise = this.rpc.request(
@@ -151,25 +172,25 @@ function genTwripClientProtobufImpl(ctx: any, file: FileDescriptorProto, service
                 );
                 return promise.then((data) => ${relativeMessageName(ctx, file, method.outputType)}.${decodeProtobuf(ctx, "data as Uint8Array")});
             }
-        `
-    });
+        `;
+  });
 
-    const bindings = service.method.map((method) => {
-        return code`
-            this.${formatMethodName(ctx, method.name!)}.bind(this);
-        `
-    })
-
+  const bindings = service.method.map((method) => {
     return code`
+            this.${formatMethodName(ctx, method.name!)}.bind(this);
+        `;
+  });
+
+  return code`
         export class ${service.name}ClientProtobuf implements ${service.name}Client {
           private readonly rpc: Rpc;
           constructor(rpc: Rpc) {
             this.rpc = rpc;
-            ${joinCode(bindings, {on: `\n`})}
+            ${joinCode(bindings, { on: `\n` })}
           }
-          ${joinCode(methods, {on: `\n\n`})}
+          ${joinCode(methods, { on: `\n\n` })}
         }
-    `
+    `;
 }
 
 /**
@@ -178,34 +199,38 @@ function genTwripClientProtobufImpl(ctx: any, file: FileDescriptorProto, service
  * @param file
  * @param service
  */
-function genTwirpService(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const importService = service.name;
+function genTwirpService(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const importService = service.name;
 
-    const serverMethods = service.method.map((method) => {
-        return code`
-            ${formatMethodName(ctx, method.name!)}(ctx: T, request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}>
-        `
-    })
-
-    const methodEnum = service.method.map((method) => {
-        return code`${formatMethodName(ctx, method.name!)} = "${formatMethodName(ctx, method.name!)}",`
-    })
-
-    const methodList = service.method.map((method) => {
-        return code`${importService}Method.${formatMethodName(ctx, method.name!)}`
-    })
-
+  const serverMethods = service.method.map((method) => {
     return code`
+            ${formatMethodName(ctx, method.name!)}(ctx: T, request: ${relativeMessageName(ctx, file, method.inputType)}): Promise<${relativeMessageName(ctx, file, method.outputType)}>
+        `;
+  });
+
+  const methodEnum = service.method.map((method) => {
+    return code`${formatMethodName(ctx, method.name!)} = "${formatMethodName(ctx, method.name!)}",`;
+  });
+
+  const methodList = service.method.map((method) => {
+    return code`${importService}Method.${formatMethodName(ctx, method.name!)}`;
+  });
+
+  return code`
         export interface ${importService}Twirp<T extends ${TwirpContext} = ${TwirpContext}> {
-            ${joinCode(serverMethods, {on: `\n`})}
+            ${joinCode(serverMethods, { on: `\n` })}
         }
 
         export enum ${importService}Method {
-            ${joinCode(methodEnum, {on: "\n"})}
+            ${joinCode(methodEnum, { on: "\n" })}
         }
 
-        export const ${importService}MethodList = [${joinCode(methodList, {on: ","})}];
-    `
+        export const ${importService}MethodList = [${joinCode(methodList, { on: "," })}];
+    `;
 }
 
 /**
@@ -214,10 +239,14 @@ function genTwirpService(ctx: any, file: FileDescriptorProto, service: ServiceDe
  * @param file
  * @param service
  */
-function genServer(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const importService = service.name;
+function genServer(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const importService = service.name;
 
-    return code`
+  return code`
 
         //==================================//
         //          Server Code             //
@@ -228,17 +257,17 @@ function genServer(ctx: any, file: FileDescriptorProto, service: ServiceDescript
         export function create${importService}Server<T extends ${TwirpContext} = ${TwirpContext}>(service: ${importService}Twirp<T>) {
             return new ${TwirpServer}<${importService}Twirp, T>({
                 service,
-                packageName: "${file.package ?? ''}",
+                packageName: "${file.package ?? ""}",
                 serviceName: "${importService}",
                 methodList: ${importService}MethodList,
                 matchRoute: match${importService}Route,
             })
         }
         ${genRouteHandler(ctx, file, service)}
-        ${joinCode(genHandleRequestMethod(ctx, file, service), {on: "\n\n"})}
-        ${joinCode(genHandleJSONRequest(ctx, file, service), {on: "\n\n"})}
-        ${joinCode(genHandleProtobufRequest(ctx, file, service), {on: "\n\n"})}
-`
+        ${joinCode(genHandleRequestMethod(ctx, file, service), { on: "\n\n" })}
+        ${joinCode(genHandleJSONRequest(ctx, file, service), { on: "\n\n" })}
+        ${joinCode(genHandleProtobufRequest(ctx, file, service), { on: "\n\n" })}
+`;
 }
 
 /**
@@ -247,27 +276,33 @@ function genServer(ctx: any, file: FileDescriptorProto, service: ServiceDescript
  * @param file
  * @param service
  */
-function genRouteHandler(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    const cases = service.method.map(method => code`
+function genRouteHandler(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  const cases = service.method.map(
+    (method) => code`
     case "${formatMethodName(ctx, method.name!)}":
         return async (ctx: T, service: ${service.name}Twirp ,data: Buffer, interceptors?: ${Interceptor}<T, ${relativeMessageName(ctx, file, method.inputType)}, ${relativeMessageName(ctx, file, method.outputType)}>[]) => {
             ctx.methodName = "${formatMethodName(ctx, method.name!)}"
             await events.onMatch(ctx);
             return handle${formatMethodName(ctx, method.name!, service.name)}Request(ctx, service, data, interceptors)
         }
-    `)
+    `,
+  );
 
-    return code`
+  return code`
     function match${service.name}Route<T extends ${TwirpContext} = ${TwirpContext}>(method: string, events: ${RouterEvents}<T>) {
         switch(method) {
-        ${joinCode(cases, { on: `\n`})}
+        ${joinCode(cases, { on: `\n` })}
         default:
             events.onNotFound();
             const msg = \`no handler found\`;
             throw new ${TwirpError}(${TwirpErrorCode}.BadRoute, msg)
         }
     }
-    `
+    `;
 }
 
 /**
@@ -276,9 +311,13 @@ function genRouteHandler(ctx: any, file: FileDescriptorProto, service: ServiceDe
  * @param file
  * @param service
  */
-function genHandleRequestMethod(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    return service.method.map(method => {
-        return code`
+function genHandleRequestMethod(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  return service.method.map((method) => {
+    return code`
         function handle${formatMethodName(ctx, method.name!, service.name)}Request<T extends ${TwirpContext} = ${TwirpContext}>(ctx: T, service: ${service.name}Twirp ,data: Buffer, interceptors?: ${Interceptor}<T, ${relativeMessageName(ctx, file, method.inputType)}, ${relativeMessageName(ctx, file, method.outputType)}>[]): Promise<string | Uint8Array> {
             switch (ctx.contentType) {
                 case ${TwirpContentType}.JSON:
@@ -290,8 +329,8 @@ function genHandleRequestMethod(ctx: any, file: FileDescriptorProto, service: Se
                     throw new ${TwirpError}(${TwirpErrorCode}.BadRoute, msg);
             }
         }
-    `
-    })
+    `;
+  });
 }
 
 /**
@@ -300,9 +339,13 @@ function genHandleRequestMethod(ctx: any, file: FileDescriptorProto, service: Se
  * @param file
  * @param service
  */
-function genHandleJSONRequest(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    return service.method.map(method => {
-        return code`
+function genHandleJSONRequest(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  return service.method.map((method) => {
+    return code`
 
         async function handle${formatMethodName(ctx, method.name!, service.name)}JSON<T extends ${TwirpContext} = ${TwirpContext}>(ctx: T, service: ${service.name}Twirp, data: Buffer, interceptors?: ${Interceptor}<T, ${relativeMessageName(ctx, file, method.inputType)}, ${relativeMessageName(ctx, file, method.outputType)}>[]) {
             let request: ${relativeMessageName(ctx, file, method.inputType)}
@@ -327,10 +370,10 @@ function genHandleJSONRequest(ctx: any, file: FileDescriptorProto, service: Serv
                 response = await service.${formatMethodName(ctx, method.name!)}(ctx, request!)
             }
 
-            return JSON.stringify(${relativeMessageName(ctx, file, method.outputType)}.${encodeJSON(ctx,"response")} as string);
+            return JSON.stringify(${relativeMessageName(ctx, file, method.outputType)}.${encodeJSON(ctx, "response")} as string);
         }
-    `
-    })
+    `;
+  });
 }
 
 /**
@@ -339,9 +382,13 @@ function genHandleJSONRequest(ctx: any, file: FileDescriptorProto, service: Serv
  * @param file
  * @param service
  */
-function genHandleProtobufRequest(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
-    return service.method.map(method => {
-        return code`
+function genHandleProtobufRequest(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
+  return service.method.map((method) => {
+    return code`
 
         async function handle${formatMethodName(ctx, method.name!, service.name)}Protobuf<T extends ${TwirpContext} = ${TwirpContext}>(ctx: T, service: ${service.name}Twirp, data: Buffer, interceptors?: ${Interceptor}<T, ${relativeMessageName(ctx, file, method.inputType)}, ${relativeMessageName(ctx, file, method.outputType)}>[]) {
             let request: ${relativeMessageName(ctx, file, method.inputType)}
@@ -367,109 +414,121 @@ function genHandleProtobufRequest(ctx: any, file: FileDescriptorProto, service: 
 
             return Buffer.from(${relativeMessageName(ctx, file, method.outputType)}.${encodeProtobuf(ctx, "response")});
         }
-    `
-    })
+    `;
+  });
 }
 
 enum SupportedLibs {
-    TSProto = "ts-proto",
-    ProtobufTS = "protobuf-ts"
+  TSProto = "ts-proto",
+  ProtobufTS = "protobuf-ts",
 }
 
 function validateLib(lib: string): SupportedLibs {
-    switch (lib) {
-        case "ts-proto":
-            return SupportedLibs.TSProto;
-        case "protobuf-ts":
-            return SupportedLibs.ProtobufTS;
-        default:
-            throw new Error(`library ${lib} not supported`)
-    }
+  switch (lib) {
+    case "ts-proto":
+      return SupportedLibs.TSProto;
+    case "protobuf-ts":
+      return SupportedLibs.ProtobufTS;
+    default:
+      throw new Error(`library ${lib} not supported`);
+  }
 }
 
 function decodeJSON(ctx: any, dataName: string) {
-    const protoLib = validateLib(ctx.lib);
+  const protoLib = validateLib(ctx.lib);
 
-    if (protoLib === SupportedLibs.TSProto) {
-        return code`fromJSON(${dataName})`
-    }
+  if (protoLib === SupportedLibs.TSProto) {
+    return code`fromJSON(${dataName})`;
+  }
 
-    return code`fromJson(${dataName}, { ignoreUnknownFields: true })`
+  return code`fromJson(${dataName}, { ignoreUnknownFields: true })`;
 }
 
 function encodeJSON(ctx: any, dataName: string) {
-    const protoLib = validateLib(ctx.lib);
+  const protoLib = validateLib(ctx.lib);
 
-    if (protoLib === SupportedLibs.TSProto) {
-        return code`toJSON(${dataName})`
-    }
+  if (protoLib === SupportedLibs.TSProto) {
+    return code`toJSON(${dataName})`;
+  }
 
-    return code`toJson(${dataName}, {useProtoFieldName: true, emitDefaultValues: ${ctx.emitDefaultValues ? 'true' : 'false'}})`
+  return code`toJson(${dataName}, {useProtoFieldName: true, emitDefaultValues: ${ctx.emitDefaultValues ? "true" : "false"}})`;
 }
 
 function encodeProtobuf(ctx: any, dataName: string) {
-    const protoLib = validateLib(ctx.lib);
+  const protoLib = validateLib(ctx.lib);
 
-    if (protoLib === SupportedLibs.TSProto) {
-        return code`encode(${dataName}).finish()`
-    }
+  if (protoLib === SupportedLibs.TSProto) {
+    return code`encode(${dataName}).finish()`;
+  }
 
-    return code`toBinary(${dataName})`
+  return code`toBinary(${dataName})`;
 }
 
 function decodeProtobuf(ctx: any, dataName: string) {
-    const protoLib = validateLib(ctx.lib);
+  const protoLib = validateLib(ctx.lib);
 
-    if (protoLib === SupportedLibs.TSProto) {
-        return code`decode(${dataName})`
-    }
+  if (protoLib === SupportedLibs.TSProto) {
+    return code`decode(${dataName})`;
+  }
 
-    return code`fromBinary(${dataName})`
+  return code`fromBinary(${dataName})`;
 }
 
-function relativeMessageName(ctx: any, file: FileDescriptorProto, messageName?: string) {
-    const registry = ctx.registry as DescriptorRegistry;
-    const symbols = ctx.symbols as SymbolTable;
+function relativeMessageName(
+  ctx: any,
+  file: FileDescriptorProto,
+  messageName?: string,
+) {
+  const registry = ctx.registry as DescriptorRegistry;
+  const symbols = ctx.symbols as SymbolTable;
 
-    const entry = symbols.find(registry.resolveTypeName(messageName!));
+  const entry = symbols.find(registry.resolveTypeName(messageName!));
 
-    if (!entry) {
-        throw new Error(`Message ${messageName} not found`);
-    }
+  if (!entry) {
+    throw new Error(`Message ${messageName} not found`);
+  }
 
-    const messageType = createLocalTypeName(entry.descriptor, registry);
-    const relativePath = createRelativeImportPath(file.name!, entry.file.getFilename())
+  const messageType = createLocalTypeName(entry.descriptor, registry);
+  const relativePath = createRelativeImportPath(
+    file.name!,
+    entry.file.getFilename(),
+  );
 
-    return code`${imp(`${messageType}@${relativePath}`)}`;
+  return code`${imp(`${messageType}@${relativePath}`)}`;
 }
 
 /**
  * Create a relative path for an import statement like
  * `import {Foo} from "./foo"`
  */
-function createRelativeImportPath(currentPath: string, pathToImportFrom: string): string {
-    // create relative path to the file to import
-    let fromPath = path.relative(path.dirname(currentPath), pathToImportFrom);
+function createRelativeImportPath(
+  currentPath: string,
+  pathToImportFrom: string,
+): string {
+  // create relative path to the file to import
+  let fromPath = path.relative(path.dirname(currentPath), pathToImportFrom);
 
-    // on windows, this may add backslash directory separators.
-    // we replace them with forward slash.
-    if (path.sep !== "/") {
-        fromPath = fromPath.split(path.sep).join("/");
-    }
+  // on windows, this may add backslash directory separators.
+  // we replace them with forward slash.
+  if (path.sep !== "/") {
+    fromPath = fromPath.split(path.sep).join("/");
+  }
 
-    // drop file extension
-    fromPath = fromPath.replace(/\.[a-z]+$/, '');
+  // drop file extension
+  fromPath = fromPath.replace(/\.[a-z]+$/, "");
 
-    // make sure to start with './' to signal relative path to module resolution
-    if (!fromPath.startsWith('../') && !fromPath.startsWith('./')) {
-        fromPath = './' + fromPath;
-    }
-    return fromPath;
+  // make sure to start with './' to signal relative path to module resolution
+  if (!fromPath.startsWith("../") && !fromPath.startsWith("./")) {
+    fromPath = "./" + fromPath;
+  }
+  return fromPath;
 }
 
 function formatMethodName(ctx: any, methodName: string, serviceName?: string) {
-    if(methodName === undefined) return undefined;
+  if (methodName === undefined) return undefined;
 
-    serviceName = serviceName || ""
-    return ctx.camelCase ? camelCase(serviceName) + camelCase(methodName) : serviceName + methodName;
+  serviceName = serviceName || "";
+  return ctx.camelCase
+    ? camelCase(serviceName) + camelCase(methodName)
+    : serviceName + methodName;
 }

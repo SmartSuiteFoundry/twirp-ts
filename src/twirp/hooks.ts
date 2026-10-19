@@ -1,5 +1,5 @@
-import { TwirpContext } from "./context.js";
-import { TwirpError } from "./errors.js";
+import type { TwirpContext } from "./context.js";
+import type { TwirpError } from "./errors.js";
 
 // ServerHooks is a container for callbacks that can instrument a
 // Twirp-generated server. These callbacks all accept a context and return a
@@ -63,7 +63,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
         }
         console.warn(
           "hook requestPrepared is deprecated and will be removed in the next release. " +
-            "Please use responsePrepared instead."
+            "Please use responsePrepared instead.",
         );
         await hook.requestPrepared(ctx);
       }
@@ -83,7 +83,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
         }
         console.warn(
           "hook requestSent is deprecated and will be removed in the next release. " +
-            "Please use responseSent instead."
+            "Please use responseSent instead.",
         );
         await hook.requestSent(ctx);
       }
@@ -118,7 +118,7 @@ export function chainHooks<T extends TwirpContext = TwirpContext>(
 }
 
 export function isHook<T extends TwirpContext = TwirpContext>(
-  object: any
+  object: any,
 ): object is ServerHooks<T> {
   return (
     "requestReceived" in object ||

@@ -1,4 +1,4 @@
-import { GeneratedFile } from "@protobuf-ts/plugin-framework";
+import type { GeneratedFile } from "@protobuf-ts/plugin-framework";
 
 export class File implements GeneratedFile {
   private content = "";

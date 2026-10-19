@@ -33,7 +33,7 @@ const walk = async (dir: string): Promise<string[]> => {
 
 const resolveSpecifier = async (
   fromFile: string,
-  spec: string
+  spec: string,
 ): Promise<string | undefined> => {
   if (/\.(js|json|mjs|cjs)$/.test(spec)) return spec;
   const base = join(dirname(fromFile), spec);
@@ -52,7 +52,7 @@ const resolveSpecifier = async (
  * compiles its generated code as ESM has to add them after codegen.
  */
 export const applyEsmExtensions = async (
-  root: string
+  root: string,
 ): Promise<EsmExtensionsResult> => {
   const from = resolve(root);
   const changed: string[] = [];

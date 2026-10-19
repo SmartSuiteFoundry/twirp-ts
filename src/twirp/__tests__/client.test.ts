@@ -1,142 +1,152 @@
-import * as http from "http";
-import { AddressInfo } from "net";
-import {createHttpTerminator, HttpTerminator} from "http-terminator";
+import * as http from "node:http";
+import type { AddressInfo } from "node:net";
+import { beforeEach, describe, expect, it } from "@jest/globals";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
-    createHaberdasherServer,
-    HaberdasherClientJSON,
-    HaberdasherClientProtobuf
+  type FindHatRPC,
+  Hat,
+  type ListHatRPC,
+  type Size,
+} from "../__mocks__/service.js";
+import {
+  createHaberdasherServer,
+  HaberdasherClientJSON,
+  HaberdasherClientProtobuf,
 } from "../__mocks__/service.twirp.js";
-import {TwirpContext} from "../context.js";
-import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
-import {NodeHttpRPC} from "../node-http.client.js";
-import {InternalServerError, TwirpError, TwirpErrorCode} from "../errors.js";
+import type { TwirpContext } from "../context.js";
+import { InternalServerError, TwirpError, TwirpErrorCode } from "../errors.js";
+import { NodeHttpRPC } from "../node-http.client.js";
 
 describe("Twirp Clients", () => {
-
-    let httpTerminator: HttpTerminator;
-    let server: http.Server;
-    beforeEach(() => {
-        const twirpServer = createHaberdasherServer({
-            async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
-                return Hat.create({
-                    id: "1",
-                    name: "cap",
-                    color: "blue",
-                    inches: 100,
-                    variants: [],
-                })
-            },
-            async FindHat(ctx, request): Promise<FindHatRPC> {
-                return request;
-            },
-            async ListHat(ctx, request): Promise<ListHatRPC> {
-                return request;
-            }
+  let httpTerminator: HttpTerminator;
+  let server: http.Server;
+  beforeEach(() => {
+    const twirpServer = createHaberdasherServer({
+      async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
+        return Hat.create({
+          id: "1",
+          name: "cap",
+          color: "blue",
+          inches: 100,
+          variants: [],
         });
-
-        server = http.createServer(twirpServer.httpHandler());
-        httpTerminator = createHttpTerminator({
-            server,
-        });
-    })
-
-    it("can call methods using the JSON client", (done) => {
-        server.listen(0, async () => {
-            const port = (server.address() as AddressInfo).port;
-            const client = new HaberdasherClientJSON(NodeHttpRPC({
-                baseUrl: `http://localhost:${port}/twirp`,
-            }));
-
-            const hat = await client.MakeHat({
-                inches: 1,
-            });
-
-            expect(hat).toEqual({
-                id: "1",
-                color: "blue",
-                inches: 100,
-                name: "cap",
-                variants: [],
-            });
-
-            await httpTerminator.terminate();
-            done();
-        })
+      },
+      async FindHat(ctx, request): Promise<FindHatRPC> {
+        return request;
+      },
+      async ListHat(ctx, request): Promise<ListHatRPC> {
+        return request;
+      },
     });
 
-    it("can call methods using the Protobuf client", (done) => {
-        server.listen(0, async () => {
-            const port = (server.address() as AddressInfo).port;
-            const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: `http://localhost:${port}/twirp`,
-            }));
+    server = http.createServer(twirpServer.httpHandler());
+    httpTerminator = createHttpTerminator({
+      server,
+    });
+  });
 
-            const hat = await client.MakeHat({
-                inches: 1,
-            });
+  it("can call methods using the JSON client", (done) => {
+    server.listen(0, async () => {
+      const port = (server.address() as AddressInfo).port;
+      const client = new HaberdasherClientJSON(
+        NodeHttpRPC({
+          baseUrl: `http://localhost:${port}/twirp`,
+        }),
+      );
 
-            expect(hat).toEqual({
-                id: "1",
-                color: "blue",
-                inches: 100,
-                name: "cap",
-                variants: [],
-            });
+      const hat = await client.MakeHat({
+        inches: 1,
+      });
 
-            await httpTerminator.terminate();
-            done();
-        })
+      expect(hat).toEqual({
+        id: "1",
+        color: "blue",
+        inches: 100,
+        name: "cap",
+        variants: [],
+      });
+
+      await httpTerminator.terminate();
+      done();
+    });
+  });
+
+  it("can call methods using the Protobuf client", (done) => {
+    server.listen(0, async () => {
+      const port = (server.address() as AddressInfo).port;
+      const client = new HaberdasherClientProtobuf(
+        NodeHttpRPC({
+          baseUrl: `http://localhost:${port}/twirp`,
+        }),
+      );
+
+      const hat = await client.MakeHat({
+        inches: 1,
+      });
+
+      expect(hat).toEqual({
+        id: "1",
+        color: "blue",
+        inches: 100,
+        name: "cap",
+        variants: [],
+      });
+
+      await httpTerminator.terminate();
+      done();
+    });
+  });
+
+  it("will return a TwripError when a error occur", (done) => {
+    const twirpServer = createHaberdasherServer({
+      async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
+        const error = new InternalServerError("error");
+        error.withMeta("test", "msg");
+        error.withMeta("test2", "msg2");
+        throw error;
+      },
+      async FindHat(ctx, request): Promise<FindHatRPC> {
+        return request;
+      },
+      async ListHat(ctx, request): Promise<ListHatRPC> {
+        return request;
+      },
     });
 
-    it("will return a TwripError when a error occur", (done) => {
-        const twirpServer = createHaberdasherServer({
-            async MakeHat(ctx: TwirpContext, request: Size): Promise<Hat> {
-                const error = new InternalServerError("error");
-                error.withMeta("test", "msg")
-                error.withMeta("test2", "msg2")
-                throw error;
-            },
-            async FindHat(ctx, request): Promise<FindHatRPC> {
-                return request;
-            },
-            async ListHat(ctx, request): Promise<ListHatRPC> {
-                return request;
-            }
+    server = http.createServer(twirpServer.httpHandler());
+    httpTerminator = createHttpTerminator({
+      server,
+    });
+
+    server.listen(0, async () => {
+      const port = (server.address() as AddressInfo).port;
+      const client = new HaberdasherClientProtobuf(
+        NodeHttpRPC({
+          baseUrl: `http://localhost:${port}/twirp`,
+        }),
+      );
+
+      let err: Error | undefined;
+      try {
+        await client.MakeHat({
+          inches: 1,
         });
+      } catch (e) {
+        err = e as Error;
+      }
 
-        server = http.createServer(twirpServer.httpHandler());
-        httpTerminator = createHttpTerminator({
-            server,
-        });
+      expect(err).toBeInstanceOf(TwirpError);
 
-        server.listen(0, async () => {
-            const port = (server.address() as AddressInfo).port;
-            const client = new HaberdasherClientProtobuf(NodeHttpRPC({
-                baseUrl: `http://localhost:${port}/twirp`,
-            }));
+      const twirpErr = err as TwirpError;
+      expect(twirpErr.code).toEqual(TwirpErrorCode.Internal);
+      expect(twirpErr.msg).toEqual("error");
+      expect(twirpErr.meta).toEqual({
+        test: "msg",
+        test2: "msg2",
+      });
 
-            let err: Error | undefined;
-            try {
-                await client.MakeHat({
-                    inches: 1,
-                });
-            } catch (e) {
-                err = e as Error;
-            }
-
-
-            expect(err).toBeInstanceOf(TwirpError);
-
-            const twirpErr = err as TwirpError;
-            expect(twirpErr.code).toEqual(TwirpErrorCode.Internal);
-            expect(twirpErr.msg).toEqual("error");
-            expect(twirpErr.meta).toEqual({
-                test: "msg",
-                test2: "msg2"
-            })
-
-            await httpTerminator.terminate();
-            done();
-        })
-    })
-})
+      await httpTerminator.terminate();
+      done();
+    });
+  });
+});

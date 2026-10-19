@@ -1,30 +1,30 @@
 import {
-  AnyDescriptorProto,
+  type AnyDescriptorProto,
   DescriptorProto,
-  DescriptorRegistry,
+  type DescriptorRegistry,
   EnumDescriptorProto,
-  FieldDescriptorProto,
+  type FieldDescriptorProto,
   FieldDescriptorProto_Label,
   FieldDescriptorProto_Type,
-  FileDescriptorProto,
-  MethodDescriptorProto,
-  ScalarValueType,
-  ServiceDescriptorProto,
-  SymbolTable
+  type FileDescriptorProto,
+  type MethodDescriptorProto,
+  type ScalarValueType,
+  type ServiceDescriptorProto,
+  type SymbolTable,
 } from "@protobuf-ts/plugin-framework";
-import * as yaml from 'yaml';
-import { OpenAPIV3 } from "openapi-types";
+import type { OpenAPIV3 } from "openapi-types";
+import * as yaml from "yaml";
 import { createLocalTypeName } from "../local-type-name.js";
-import { getMethod, HttpOption, Pattern } from "./gateway.js";
+import { getMethod, type HttpOption, Pattern } from "./gateway.js";
 
 interface OpenAPIDoc {
-  fileName: string,
-  content: string,
+  fileName: string;
+  content: string;
 }
 
 export enum OpenAPIType {
   GATEWAY,
-  TWIRP
+  TWIRP,
 }
 
 /**
@@ -33,10 +33,14 @@ export enum OpenAPIType {
  * @param files
  * @param type
  */
-export async function genOpenAPI(ctx: any, files: readonly FileDescriptorProto[], type: OpenAPIType) {
+export async function genOpenAPI(
+  ctx: any,
+  files: readonly FileDescriptorProto[],
+  type: OpenAPIType,
+) {
   const documents: OpenAPIDoc[] = [];
 
-  files.forEach(file => {
+  files.forEach((file) => {
     file.service.forEach((service) => {
       const document: OpenAPIV3.Document = {
         openapi: "3.0.3",
@@ -45,22 +49,24 @@ export async function genOpenAPI(ctx: any, files: readonly FileDescriptorProto[]
           version: "1.0.0",
           description: genDescription(ctx, service),
         },
-        paths: type === OpenAPIType.TWIRP ?
-          genTwirpPaths(ctx, file, service) :
-          genGatewayPaths(ctx, file, service),
+        paths:
+          type === OpenAPIType.TWIRP
+            ? genTwirpPaths(ctx, file, service)
+            : genGatewayPaths(ctx, file, service),
         components: genComponents(ctx, service.method),
-      }
+      };
 
-      const fileName = type === OpenAPIType.TWIRP ?
-        `${service.name?.toLowerCase()}.twirp.openapi.yaml` :
-        `${service.name?.toLowerCase()}.openapi.yaml`
+      const fileName =
+        type === OpenAPIType.TWIRP
+          ? `${service.name?.toLowerCase()}.twirp.openapi.yaml`
+          : `${service.name?.toLowerCase()}.openapi.yaml`;
 
       documents.push({
         fileName,
         content: yaml.stringify(document),
       });
-    })
-  })
+    });
+  });
 
   return documents;
 }
@@ -71,11 +77,17 @@ export async function genOpenAPI(ctx: any, files: readonly FileDescriptorProto[]
  * @param file
  * @param service
  */
-function genTwirpPaths(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
+function genTwirpPaths(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
   return service.method.reduce((paths, method) => {
     const description = genDescription(ctx, method);
 
-    paths[`/${file.package ? file.package + "." : ""}${service.name}/${method.name}`] = {
+    paths[
+      `/${file.package ? file.package + "." : ""}${service.name}/${method.name}`
+    ] = {
       post: {
         summary: description,
         operationId: `${service.name}_${method.name}`,
@@ -84,10 +96,10 @@ function genTwirpPaths(ctx: any, file: FileDescriptorProto, service: ServiceDesc
           content: {
             "application/json": {
               schema: {
-                $ref: genRef(ctx, method.inputType!)
-              }
-            }
-          }
+                $ref: genRef(ctx, method.inputType!),
+              },
+            },
+          },
         },
         responses: {
           "200": {
@@ -96,15 +108,15 @@ function genTwirpPaths(ctx: any, file: FileDescriptorProto, service: ServiceDesc
               "application/json": {
                 schema: {
                   $ref: genRef(ctx, method.outputType!),
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                },
+              },
+            },
+          },
+        },
+      },
+    };
     return paths;
-  }, {} as OpenAPIV3.PathsObject)
+  }, {} as OpenAPIV3.PathsObject);
 }
 
 /**
@@ -113,7 +125,11 @@ function genTwirpPaths(ctx: any, file: FileDescriptorProto, service: ServiceDesc
  * @param file
  * @param service
  */
-function genGatewayPaths(ctx: any, file: FileDescriptorProto, service: ServiceDescriptorProto) {
+function genGatewayPaths(
+  ctx: any,
+  file: FileDescriptorProto,
+  service: ServiceDescriptorProto,
+) {
   const registry = ctx.registry as DescriptorRegistry;
 
   /**
@@ -122,49 +138,69 @@ function genGatewayPaths(ctx: any, file: FileDescriptorProto, service: ServiceDe
    * @param httpSpec
    * @param paths
    */
-  function buildPath(method: MethodDescriptorProto, httpSpec: HttpOption, paths: OpenAPIV3.PathsObject) {
-    const httpMethod = getMethod(httpSpec)
+  function buildPath(
+    method: MethodDescriptorProto,
+    httpSpec: HttpOption,
+    paths: OpenAPIV3.PathsObject,
+  ) {
+    const httpMethod = getMethod(httpSpec);
     const description = genDescription(ctx, method);
 
     const pathItem = {
       [httpMethod]: {
         summary: description,
         operationId: `${service.name}_${method.name}`,
-      }
-    } as OpenAPIV3.PathItemObject
+      },
+    } as OpenAPIV3.PathItemObject;
 
-    const inputMessage = registry.resolveTypeName(method.inputType!) as DescriptorProto;
-    const outPutMessage = registry.resolveTypeName(method.outputType!) as DescriptorProto;
+    const inputMessage = registry.resolveTypeName(
+      method.inputType!,
+    ) as DescriptorProto;
+    const outPutMessage = registry.resolveTypeName(
+      method.outputType!,
+    ) as DescriptorProto;
 
     // All methods except GET have body
     if (httpMethod !== Pattern.GET) {
-      pathItem[httpMethod]!.requestBody = genGatewayBody(ctx, httpSpec, inputMessage)
+      pathItem[httpMethod]!.requestBody = genGatewayBody(
+        ctx,
+        httpSpec,
+        inputMessage,
+      );
     }
 
     // All methods might have params
-    pathItem[httpMethod]!.parameters = genGatewayParams(ctx, httpSpec, inputMessage)
-    pathItem[httpMethod]!.responses = genGatewayResponse(ctx, httpSpec, outPutMessage)
+    pathItem[httpMethod]!.parameters = genGatewayParams(
+      ctx,
+      httpSpec,
+      inputMessage,
+    );
+    pathItem[httpMethod]!.responses = genGatewayResponse(
+      ctx,
+      httpSpec,
+      outPutMessage,
+    );
 
     paths[`${httpSpec[httpMethod]}`] = pathItem;
 
     if (httpSpec.additional_bindings) {
-      buildPath(method, httpSpec.additional_bindings, paths)
+      buildPath(method, httpSpec.additional_bindings, paths);
     }
   }
 
   return service.method.reduce((paths, method) => {
     const options = ctx.interpreter.readOptions(method);
 
-    if (!options || options && !options["google.api.http"]) {
+    if (!options || (options && !options["google.api.http"])) {
       return paths;
     }
 
-    const httpSpec = options["google.api.http"] as HttpOption
+    const httpSpec = options["google.api.http"] as HttpOption;
 
     buildPath(method, httpSpec, paths);
 
     return paths;
-  }, {} as OpenAPIV3.PathsObject)
+  }, {} as OpenAPIV3.PathsObject);
 }
 
 /**
@@ -173,7 +209,11 @@ function genGatewayPaths(ctx: any, file: FileDescriptorProto, service: ServiceDe
  * @param httpOptions
  * @param message
  */
-function genGatewayResponse(ctx: any, httpOptions: HttpOption, message: DescriptorProto): OpenAPIV3.ResponsesObject {
+function genGatewayResponse(
+  ctx: any,
+  httpOptions: HttpOption,
+  message: DescriptorProto,
+): OpenAPIV3.ResponsesObject {
   let schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject = {};
 
   if (httpOptions.responseBody) {
@@ -181,14 +221,14 @@ function genGatewayResponse(ctx: any, httpOptions: HttpOption, message: Descript
       type: "object",
       properties: {
         [httpOptions.responseBody]: {
-          $ref: `#/components/schemas/${message.name}`
-        }
-      }
-    }
+          $ref: `#/components/schemas/${message.name}`,
+        },
+      },
+    };
   } else {
     schema = {
-      $ref: `#/components/schemas/${message.name}`
-    }
+      $ref: `#/components/schemas/${message.name}`,
+    };
   }
 
   return {
@@ -197,10 +237,10 @@ function genGatewayResponse(ctx: any, httpOptions: HttpOption, message: Descript
       content: {
         "application/json": {
           schema,
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  };
 }
 
 /**
@@ -209,21 +249,30 @@ function genGatewayResponse(ctx: any, httpOptions: HttpOption, message: Descript
  * @param httpOptions
  * @param message
  */
-function genGatewayBody(ctx: any, httpOptions: HttpOption, message: DescriptorProto): OpenAPIV3.RequestBodyObject {
-  const schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject = {}
+function genGatewayBody(
+  ctx: any,
+  httpOptions: HttpOption,
+  message: DescriptorProto,
+): OpenAPIV3.RequestBodyObject {
+  const schema: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject = {};
 
   if (httpOptions.body === "*") {
-    (schema as OpenAPIV3.ReferenceObject).$ref = `#/components/schemas/${message.name}`
+    (schema as OpenAPIV3.ReferenceObject).$ref =
+      `#/components/schemas/${message.name}`;
   } else if (httpOptions.body) {
-    const subField = message.field.find(field => field.name === httpOptions.body);
+    const subField = message.field.find(
+      (field) => field.name === httpOptions.body,
+    );
 
     if (!subField) {
-      throw new Error(`the body field ${httpOptions.body} cannot be mapped to message ${message.name}`)
+      throw new Error(
+        `the body field ${httpOptions.body} cannot be mapped to message ${message.name}`,
+      );
     }
 
     schema.properties = {
       [httpOptions.body]: genField(ctx, subField),
-    }
+    };
   }
 
   return {
@@ -231,9 +280,9 @@ function genGatewayBody(ctx: any, httpOptions: HttpOption, message: DescriptorPr
     content: {
       "application/json": {
         schema,
-      }
-    }
-  }
+      },
+    },
+  };
 }
 
 /**
@@ -242,48 +291,48 @@ function genGatewayBody(ctx: any, httpOptions: HttpOption, message: DescriptorPr
  * @param httpOptions
  * @param message
  */
-function genGatewayParams(ctx: any, httpOptions: HttpOption, message: DescriptorProto): (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[] {
-  const httpMethod = getMethod(httpOptions)
-  const params = parseUriParams(httpOptions[httpMethod])
+function genGatewayParams(
+  ctx: any,
+  httpOptions: HttpOption,
+  message: DescriptorProto,
+): (OpenAPIV3.ReferenceObject | OpenAPIV3.ParameterObject)[] {
+  const httpMethod = getMethod(httpOptions);
+  const params = parseUriParams(httpOptions[httpMethod]);
 
   const urlParams = message.field
-    .filter((field) =>
-      params.find((param) => param === field.name)
-    )
+    .filter((field) => params.find((param) => param === field.name))
     .map((field) => {
       return {
         name: field.name,
         in: "path",
         required: true,
         schema: {
-          ...genField(ctx, field)
-        }
-      } as OpenAPIV3.ParameterObject
-    })
+          ...genField(ctx, field),
+        },
+      } as OpenAPIV3.ParameterObject;
+    });
 
   if (httpOptions.body === "*") {
-    return urlParams
+    return urlParams;
   }
 
   const queryString = message.field
-    .filter((field) =>
-      field.name !== httpOptions.body &&
-      !params.find(param => param === field.name!)
+    .filter(
+      (field) =>
+        field.name !== httpOptions.body &&
+        !params.find((param) => param === field.name!),
     )
     .map((field) => {
       return {
         name: field.name,
         in: "query",
         schema: {
-          ...genField(ctx, field)
-        }
-      } as OpenAPIV3.ParameterObject
-    })
+          ...genField(ctx, field),
+        },
+      } as OpenAPIV3.ParameterObject;
+    });
 
-  return [
-    ...queryString,
-    ...urlParams,
-  ]
+  return [...queryString, ...urlParams];
 }
 
 /**
@@ -293,7 +342,7 @@ function genGatewayParams(ctx: any, httpOptions: HttpOption, message: Descriptor
  */
 function genComponents(ctx: any, methods: MethodDescriptorProto[]) {
   const components: OpenAPIV3.ComponentsObject = {
-    schemas: {}
+    schemas: {},
   };
 
   methods.reduce((schemas, method) => {
@@ -301,7 +350,7 @@ function genComponents(ctx: any, methods: MethodDescriptorProto[]) {
     genSchema(ctx, schemas, method.outputType!);
 
     return schemas;
-  }, components.schemas)
+  }, components.schemas);
 
   return components;
 }
@@ -312,7 +361,11 @@ function genComponents(ctx: any, methods: MethodDescriptorProto[]) {
  * @param schemas
  * @param typeName
  */
-function genSchema(ctx: any, schemas: OpenAPIV3.ComponentsObject["schemas"], typeName: string) {
+function genSchema(
+  ctx: any,
+  schemas: OpenAPIV3.ComponentsObject["schemas"],
+  typeName: string,
+) {
   const registry = ctx.registry as DescriptorRegistry;
 
   const localName = localMessageName(ctx, typeName);
@@ -334,11 +387,11 @@ function genSchema(ctx: any, schemas: OpenAPIV3.ComponentsObject["schemas"], typ
     descriptor.oneofDecl.forEach((oneOfField, index) => {
       const oneOfTyName = `${localName}_${capitalizeFirstLetter(oneOfField.name!)}`;
 
-      const oneOfFields = descriptor.field.filter(field => {
+      const oneOfFields = descriptor.field.filter((field) => {
         return field.oneofIndex === index;
-      })
+      });
       schemas![oneOfTyName] = genOneOfTypeKind(ctx, descriptor, oneOfFields);
-    })
+    });
   } else {
     schemas![localName] = genType(ctx, descriptor);
   }
@@ -349,9 +402,9 @@ function genSchema(ctx: any, schemas: OpenAPIV3.ComponentsObject["schemas"], typ
     }
 
     if (registry.isMapField(field)) {
-      const entry = registry.resolveTypeName(field.typeName!)
+      const entry = registry.resolveTypeName(field.typeName!);
       if (DescriptorProto.is(entry)) {
-        const valueField = entry.field.find(fd => fd.number === 2);
+        const valueField = entry.field.find((fd) => fd.number === 2);
 
         if (!valueField) {
           return;
@@ -361,14 +414,14 @@ function genSchema(ctx: any, schemas: OpenAPIV3.ComponentsObject["schemas"], typ
           return;
         }
 
-        field = valueField
+        field = valueField;
       }
     } else if (registry.isSyntheticElement(descriptor)) {
       return;
     }
 
     genSchema(ctx, schemas, field.typeName!);
-  })
+  });
 }
 
 /**
@@ -377,12 +430,12 @@ function genSchema(ctx: any, schemas: OpenAPIV3.ComponentsObject["schemas"], typ
  * @param message
  */
 function genType(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObject {
-  const description = genDescription(ctx, message)
+  const description = genDescription(ctx, message);
 
   return {
     properties: genMessageProperties(ctx, message),
     description,
-  }
+  };
 }
 
 /**
@@ -390,8 +443,11 @@ function genType(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObject {
  * @param ctx
  * @param message
  */
-function genOneOfType(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObject {
-  const description = genDescription(ctx, message)
+function genOneOfType(
+  ctx: any,
+  message: DescriptorProto,
+): OpenAPIV3.SchemaObject {
+  const description = genDescription(ctx, message);
 
   const oneOf = {
     allOf: [
@@ -401,13 +457,13 @@ function genOneOfType(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObjec
       },
     ] as (OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject)[],
     description,
-  }
+  };
 
   message.oneofDecl.forEach((field) => {
     oneOf.allOf.push({
-      $ref: `#/components/schemas/${message.name}_${capitalizeFirstLetter(field.name!)}`
-    })
-  })
+      $ref: `#/components/schemas/${message.name}_${capitalizeFirstLetter(field.name!)}`,
+    });
+  });
 
   return oneOf;
 }
@@ -418,18 +474,21 @@ function genOneOfType(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObjec
  * @param message
  * @param oneOfFields
  */
-function genOneOfTypeKind(ctx: any, message: DescriptorProto, oneOfFields: FieldDescriptorProto[]): OpenAPIV3.SchemaObject {
+function genOneOfTypeKind(
+  ctx: any,
+  message: DescriptorProto,
+  oneOfFields: FieldDescriptorProto[],
+): OpenAPIV3.SchemaObject {
   return {
     oneOf: oneOfFields.map((oneOf) => {
       return {
         type: "object",
         properties: {
           [oneOf.name!]: genField(ctx, oneOf),
-        }
-      }
-    })
-  }
-
+        },
+      };
+    }),
+  };
 }
 
 /**
@@ -437,19 +496,24 @@ function genOneOfTypeKind(ctx: any, message: DescriptorProto, oneOfFields: Field
  * @param ctx
  * @param message
  */
-function genMessageProperties(ctx: any, message: DescriptorProto): OpenAPIV3.SchemaObject["properties"] {
+function genMessageProperties(
+  ctx: any,
+  message: DescriptorProto,
+): OpenAPIV3.SchemaObject["properties"] {
   const registry = ctx.registry as DescriptorRegistry;
 
-  return message.field.reduce((fields, field) => {
+  return message.field.reduce(
+    (fields, field) => {
+      if (registry.isUserDeclaredOneof(field)) {
+        return fields;
+      }
 
-    if (registry.isUserDeclaredOneof(field)) {
-      return fields
-    }
+      fields![field.name!] = genField(ctx, field!);
 
-    fields![field.name!] = genField(ctx, field!)
-
-    return fields
-  }, {} as OpenAPIV3.SchemaObject["properties"]);
+      return fields;
+    },
+    {} as OpenAPIV3.SchemaObject["properties"],
+  );
 }
 
 /**
@@ -458,8 +522,8 @@ function genMessageProperties(ctx: any, message: DescriptorProto): OpenAPIV3.Sch
  * @param name
  */
 function genRef(ctx: any, name: string) {
-  const messageType = localMessageName(ctx, name)
-  return `#/components/schemas/${messageType}`
+  const messageType = localMessageName(ctx, name);
+  return `#/components/schemas/${messageType}`;
 }
 
 /**
@@ -467,8 +531,11 @@ function genRef(ctx: any, name: string) {
  * @param ctx
  * @param field
  */
-function genField(ctx: any, field: FieldDescriptorProto): OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject {
-  let openApiType: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject
+function genField(
+  ctx: any,
+  field: FieldDescriptorProto,
+): OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject {
+  let openApiType: OpenAPIV3.SchemaObject | OpenAPIV3.ReferenceObject;
   const registry = ctx.registry as DescriptorRegistry;
 
   switch (field.type) {
@@ -488,70 +555,73 @@ function genField(ctx: any, field: FieldDescriptorProto): OpenAPIV3.ReferenceObj
     case FieldDescriptorProto_Type.UINT64:
       openApiType = {
         type: genScalar(field.type),
-      }
+      };
       break;
     case FieldDescriptorProto_Type.BYTES:
       openApiType = {
         type: "array",
         items: {
           type: "integer",
-        }
-      }
+        },
+      };
       break;
-    case FieldDescriptorProto_Type.ENUM:
-      const enumType = registry.getEnumFieldEnum(field)
+    case FieldDescriptorProto_Type.ENUM: {
+      const enumType = registry.getEnumFieldEnum(field);
       openApiType = genEnum(enumType);
       break;
+    }
     case FieldDescriptorProto_Type.MESSAGE:
-
       // Map type
       if (registry.isMapField(field)) {
-        const mapTypeValue = registry.getMapValueType(field)
+        const mapTypeValue = registry.getMapValueType(field);
 
         if (typeof mapTypeValue === "number") {
           const scalar = mapTypeValue as ScalarValueType;
           openApiType = {
             type: "object",
             additionalProperties: {
-              type: genScalar(scalar)
-            }
-          }
+              type: genScalar(scalar),
+            },
+          };
         } else if (EnumDescriptorProto.is(mapTypeValue)) {
           openApiType = {
             type: "object",
             additionalProperties: {
-              ...genEnum(mapTypeValue)
-            }
-          }
+              ...genEnum(mapTypeValue),
+            },
+          };
         } else if (DescriptorProto.is(mapTypeValue)) {
           openApiType = {
             type: "object",
             additionalProperties: {
               $ref: `#/components/schemas/${mapTypeValue.name}`,
-            }
-          }
+            },
+          };
         } else {
-          throw new Error("map value not supported")
+          throw new Error("map value not supported");
         }
-        break
+        break;
       }
 
       openApiType = {
         $ref: genRef(ctx, field.typeName!),
-      }
-      break
+      };
+      break;
     default:
-      throw new Error(`${field.name} of type ${field.type} not supported`)
+      throw new Error(`${field.name} of type ${field.type} not supported`);
   }
 
-  const description = genDescription(ctx, field)
+  const description = genDescription(ctx, field);
 
-  if (field.label === FieldDescriptorProto_Label.REPEATED && !registry.isMapField(field)) {
+  if (
+    field.label === FieldDescriptorProto_Label.REPEATED &&
+    !registry.isMapField(field)
+  ) {
     return {
       type: "array",
       items: openApiType,
       description: description || "",
-    }
+    };
   }
 
   if (field.type !== FieldDescriptorProto_Type.MESSAGE) {
@@ -567,11 +637,11 @@ function genField(ctx: any, field: FieldDescriptorProto): OpenAPIV3.ReferenceObj
  */
 function genEnum(enumType: EnumDescriptorProto): OpenAPIV3.SchemaObject {
   return {
-    type: 'string',
+    type: "string",
     enum: enumType.value.map((value) => {
-      return value.name
-    })
-  }
+      return value.name;
+    }),
+  };
 }
 
 /**
@@ -581,12 +651,12 @@ function genEnum(enumType: EnumDescriptorProto): OpenAPIV3.SchemaObject {
 function genScalar(type: FieldDescriptorProto_Type) {
   switch (type) {
     case FieldDescriptorProto_Type.BOOL:
-      return "boolean"
+      return "boolean";
     case FieldDescriptorProto_Type.DOUBLE:
     case FieldDescriptorProto_Type.FLOAT:
-      return "number"
+      return "number";
     case FieldDescriptorProto_Type.STRING:
-      return "string"
+      return "string";
     case FieldDescriptorProto_Type.FIXED32:
     case FieldDescriptorProto_Type.FIXED64:
     case FieldDescriptorProto_Type.INT32:
@@ -597,9 +667,9 @@ function genScalar(type: FieldDescriptorProto_Type) {
     case FieldDescriptorProto_Type.SINT64:
     case FieldDescriptorProto_Type.UINT32:
     case FieldDescriptorProto_Type.UINT64:
-      return "integer"
+      return "integer";
     default:
-      throw new Error(`${type} is not a scalar value`)
+      throw new Error(`${type} is not a scalar value`);
   }
 }
 
@@ -636,18 +706,8 @@ function localMessageName(ctx: any, name: string) {
 }
 
 function parseUriParams(uri: string) {
-  return getMatches(uri, /{([a-zA-Z_0-9]+)}/g, 1)
+  return Array.from(uri.matchAll(/{([a-zA-Z_0-9]+)}/g), (match) => match[1]);
 }
-
-function getMatches(str: string, regex: RegExp, index: number = 1) {
-  const matches = [];
-  let match;
-  while (match = regex.exec(str)) {
-    matches.push(match[index]);
-  }
-  return matches;
-}
-
 
 function capitalizeFirstLetter(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
