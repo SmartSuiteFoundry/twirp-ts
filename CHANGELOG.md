@@ -1,3 +1,14 @@
+## [3.2.0](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.3...v3.2.0) (2026-10-19)
+
+### Features
+
+* publish esm only, built with typescript 7 on node 24 ([c9f7169](https://github.com/SmartSuiteFoundry/twirp-ts/commit/c9f71692257d216682bf6e2635aa6c32e3a91184))
+
+### Bug Fixes
+
+* clear the lint findings biome reports ([0e09961](https://github.com/SmartSuiteFoundry/twirp-ts/commit/0e099618c28de99444cf0959bd1531d5a8f11aa8))
+* load dot-object as a default import so the gateway parses query strings under native esm ([10a82d0](https://github.com/SmartSuiteFoundry/twirp-ts/commit/10a82d05b7789ea85da22592bad3986969c71ce8))
+
 ## [3.1.3](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.2...v3.1.3) (2026-10-19)
 
 ### Bug Fixes
