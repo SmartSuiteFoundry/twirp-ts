@@ -72,7 +72,7 @@ describe("Hooks behaviour", () => {
       "error",
     ];
 
-    hookNames.map((hookName) => {
+    hookNames.forEach((hookName) => {
       const ctx: TwirpContext = {
         req: jest.fn() as any,
         res: jest.fn() as any,

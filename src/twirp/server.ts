@@ -106,14 +106,13 @@ export class TwirpServer<
    * @param middlewares
    */
   public use(...middlewares: (ServerHooks<S> | Interceptor<S, any, any>)[]) {
-    middlewares.forEach((middleware) => {
+    for (const middleware of middlewares) {
       if (isHook<S>(middleware)) {
         this.hooks.push(middleware);
-        return this;
+      } else {
+        this.interceptors.push(middleware);
       }
-
-      this.interceptors.push(middleware);
-    });
+    }
 
     return this;
   }

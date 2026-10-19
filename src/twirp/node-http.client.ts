@@ -58,7 +58,7 @@ export const NodeHttpRPC: (options: HttpClientOptions) => Rpc = (options) => ({
             res.on("data", (chunk) => responseChunks.push(chunk));
             res.on("end", () => {
               const data = Buffer.concat(responseChunks);
-              if (res.statusCode != 200) {
+              if (res.statusCode !== 200) {
                 rejected(wrapErrorResponseToTwirpError(data.toString()));
               } else {
                 if (contentType === "application/json") {

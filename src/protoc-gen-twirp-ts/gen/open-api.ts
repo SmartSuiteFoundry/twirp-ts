@@ -706,16 +706,7 @@ function localMessageName(ctx: any, name: string) {
 }
 
 function parseUriParams(uri: string) {
-  return getMatches(uri, /{([a-zA-Z_0-9]+)}/g, 1);
-}
-
-function getMatches(str: string, regex: RegExp, index: number = 1) {
-  const matches = [];
-  let match;
-  while ((match = regex.exec(str))) {
-    matches.push(match[index]);
-  }
-  return matches;
+  return Array.from(uri.matchAll(/{([a-zA-Z_0-9]+)}/g), (match) => match[1]);
 }
 
 function capitalizeFirstLetter(str: string) {

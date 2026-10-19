@@ -41,5 +41,13 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/**/__mocks__/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }
