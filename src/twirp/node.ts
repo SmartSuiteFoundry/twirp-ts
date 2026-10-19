@@ -1,2 +1,2 @@
 export * from "./gateway.js";
-export * from "./http.client.js";
+export * from "./node-http.client.js";

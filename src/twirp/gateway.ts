@@ -9,7 +9,7 @@ import {
   TwirpError,
   TwirpErrorCode,
 } from "./errors.js";
-import { HttpClientOptions, NodeHttpRPC } from "./http.client.js";
+import { HttpClientOptions, NodeHttpRPC } from "./node-http.client.js";
 import { writeError } from "./server.js";
 
 export enum Pattern {
