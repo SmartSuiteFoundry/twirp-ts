@@ -4,6 +4,6 @@ import { jest } from "@jest/globals";
 jest.unstable_mockModule("url", () => ({}));
 
 test("loads where the url module has no URL export", async () => {
-  const { NodeHttpRPC } = await import("../http.client.js");
+  const { NodeHttpRPC } = await import("../node-http.client.js");
   expect(NodeHttpRPC).toBeInstanceOf(Function);
 });

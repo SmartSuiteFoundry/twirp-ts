@@ -8,7 +8,7 @@ import {
 } from "../__mocks__/service.twirp.js";
 import {TwirpContext} from "../context.js";
 import { FindHatRPC, Hat, ListHatRPC, Size } from "../__mocks__/service.js";
-import {NodeHttpRPC} from "../http.client.js";
+import {NodeHttpRPC} from "../node-http.client.js";
 import {InternalServerError, TwirpError, TwirpErrorCode} from "../errors.js";
 
 describe("Twirp Clients", () => {
