@@ -35,6 +35,7 @@
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/twirp/index.ts",
+      "./server": "./src/twirp/node.ts",
       "./plugin": "./src/protoc-gen-twirp-ts/plugin.ts",
       "./esm-extensions": "./src/esm-extensions/index.ts"
     }
@@ -108,6 +109,16 @@
       "require": {
         "types": "./dist/commonjs/twirp/index.d.ts",
         "default": "./dist/commonjs/twirp/index.js"
+      }
+    },
+    "./server": {
+      "import": {
+        "types": "./dist/esm/twirp/node.d.ts",
+        "default": "./dist/esm/twirp/node.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/twirp/node.d.ts",
+        "default": "./dist/commonjs/twirp/node.js"
       }
     },
     "./plugin": {
