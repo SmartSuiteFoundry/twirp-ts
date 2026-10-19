@@ -1,3 +1,10 @@
+## [3.1.2](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.1...v3.1.2) (2026-10-19)
+
+### Bug Fixes
+
+* move the node http client and gateway to the server entry ([313818a](https://github.com/SmartSuiteFoundry/twirp-ts/commit/313818a1b85ae386ce56552250418d4c7a63787c))
+* use the global URL so browser bundles build ([a281932](https://github.com/SmartSuiteFoundry/twirp-ts/commit/a281932892fd627ddbf8b52179f7f1df8650b116))
+
 ## [3.1.1](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.0...v3.1.1) (2026-10-15)
 
 ### Bug Fixes
