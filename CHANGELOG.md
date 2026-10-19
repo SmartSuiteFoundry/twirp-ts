@@ -1,3 +1,9 @@
+## [3.1.3](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.2...v3.1.3) (2026-10-19)
+
+### Bug Fixes
+
+* keep FetchRPC on the root entry ([eb2e481](https://github.com/SmartSuiteFoundry/twirp-ts/commit/eb2e48160f338876d21d8bfe5ab9bfdfab058088))
+
 ## [3.1.2](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.1...v3.1.2) (2026-10-19)
 
 ### Bug Fixes
