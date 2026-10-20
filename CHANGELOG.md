@@ -1,3 +1,9 @@
+## [3.2.1](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.2.0...v3.2.1) (2026-10-20)
+
+### Bug Fixes
+
+* push the release commit as ci-smartsuite ([5190085](https://github.com/SmartSuiteFoundry/twirp-ts/commit/519008510b42852091f5a0a9a26c056ad7776ef6))
+
 ## [3.2.0](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.1.3...v3.2.0) (2026-10-19)
 
 ### Features
