@@ -385,11 +385,13 @@ const protobufClient = new HaberdasherClientProtobuf(NodeHttpRPC({
 }));
 ```
 
-For us in the browser, you can use the provided `fetch` based implementation,
+Anywhere `fetch` is available, browsers and node alike, you can use the provided `fetch` based implementation from the main entry.
 
 For example:
 
 ```ts
+import { FetchRPC } from "@smartsuite-foundry/twirp-ts";
+
 export const jsonClient = new HaberdasherClientJSON(FetchRPC({
   baseUrl: "http://localhost:8000/twirp",
 }));
@@ -398,9 +400,10 @@ export const protobufClient = new HaberdasherClientProtobuf(FetchRPC({
 }));
 ```
 
-Alternatively provided your own implementation. 
+Alternatively provide your own implementation of the `Rpc` interface.
 
-You can check the [full example](./example/client.ts) on how to integrate the client with `axios`.
+The [example](./example) runs a server with the gateway and calls it with both clients:
+`npm i && npm run generate && npm start` from that folder (`npm run generate:ts-proto` generates with `ts-proto` instead).
 
 ## Open API V3
 

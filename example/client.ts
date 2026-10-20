@@ -1,41 +1,15 @@
-import axios from "axios";
-import {HaberdasherClientJSON, HaberdasherClientProtobuf} from "./generated/service.twirp";
-import {NodeHttpRPC} from "@smartsuite-foundry/twirp-ts/server";
+import { FetchRPC } from "@smartsuite-foundry/twirp-ts";
+import { NodeHttpRPC } from "@smartsuite-foundry/twirp-ts/server";
+import {
+  HaberdasherClientJSON,
+  HaberdasherClientProtobuf,
+} from "./generated/service.twirp.js";
 
-interface Rpc {
-    request(
-        service: string,
-        method: string,
-        contentType: "application/json" | "application/protobuf",
-        data: object | Uint8Array
-    ): Promise<object | Uint8Array>;
-}
+const baseUrl = "http://localhost:8000/twirp";
 
-const client = axios.create({
-    baseURL: "http://localhost:8000/twirp",
-})
+export const jsonClient = new HaberdasherClientJSON(FetchRPC({ baseUrl }));
 
-export const axiosImplementation: Rpc = {
-    request(service, method, contentType, data) {
-        return client.post(`${service}/${method}`, data, {
-            responseType: contentType === "application/protobuf" ? 'arraybuffer' : "json",
-            headers: {
-                "content-type": contentType,
-            }
-        }).then(response => {
-            return response.data
-        });
-    }
-}
-
-export const jsonClient = new HaberdasherClientJSON(axiosImplementation);
-// export const protobufClient = new HaberdasherClientProtobuf(axiosImplementation);
-
-// Standard implementation
-
-// export const jsonClient = new HaberdasherClientJSON(NodeHttpRPC({
-//     baseUrl: "http://localhost:8000/twirp",
-// }));
-export const protobufClient = new HaberdasherClientProtobuf(NodeHttpRPC({
-    baseUrl: "http://localhost:8000/twirp",
-}));
+// NodeHttpRPC uses node's http/https modules directly, for runtimes without fetch
+export const protobufClient = new HaberdasherClientProtobuf(
+  NodeHttpRPC({ baseUrl }),
+);
