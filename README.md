@@ -291,6 +291,13 @@ class UnauthenticatedError extends TwirpError {
 }
 ```
 
+On the client, a non-200 response that is not a Twirp error came from an
+intermediary - a gateway, proxy or load balancer. Both `FetchRPC` and
+`NodeHttpRPC` map it from the HTTP status as the spec describes (401 →
+`unauthenticated`, 403 → `permission_denied`, 404 → `bad_route`, 429/502/503/504
+→ `unavailable`, 3xx/400 → `internal`, anything else → `unknown`), with meta
+`http_error_from_intermediary: "true"`, `status_code` and `body`.
+
 ## Gateway
 The gateway allows to expose custom http endpoints that automatically maps to your twirp handlers.
 
