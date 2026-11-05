@@ -1,3 +1,9 @@
+## [3.2.2](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.2.1...v3.2.2) (2026-11-05)
+
+### Bug Fixes
+
+* map errors from intermediaries by http status ([cff3b8a](https://github.com/SmartSuiteFoundry/twirp-ts/commit/cff3b8a380ef57e9f665a03f55bf05ad4216a6d9))
+
 ## [3.2.1](https://github.com/SmartSuiteFoundry/twirp-ts/compare/v3.2.0...v3.2.1) (2026-10-20)
 
 ### Bug Fixes
